@@ -16,7 +16,7 @@
   },
   "samples": [
     {
-      "displayName": "초기화",
+      "displayName": "Initialize",
       "description": "[중요] 백엔드 서비스 초기화 및 사용법",
       "path": "Samples~/Initialize"
     }
