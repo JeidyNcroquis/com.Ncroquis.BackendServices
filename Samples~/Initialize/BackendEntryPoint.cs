@@ -14,8 +14,14 @@ namespace Ncroquis.Backend
         public async void Initialize()
         {
 
+            // 초기화 예시
+
+
+            // () 는 기본 -> Firebase 설정
             await _backendService.Provider().InitializeAsync();
 
+
+            
             bool isSignedIn = await _backendService.Auth().SignInAnonymouslyAsync();
             if (isSignedIn)
             {
