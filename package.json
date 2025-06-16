@@ -17,8 +17,18 @@
   "samples": [
     {
       "displayName": "Initialize",
-      "description": "[\uc911\uc694] \ubc31\uc5d4\ub4dc \uc11c\ube44\uc2a4 \ucd08\uae30\ud654 \ubc0f \uc0ac\uc6a9\ubc95",
+      "description": "[필수] \ubc31\uc5d4\ub4dc \uc11c\ube44\uc2a4 \ucd08\uae30\ud654 \ubc0f \uc0ac\uc6a9\ubc95",
       "path": "Samples~/Initialize"
+    },    
+    {
+      "displayName": "Firebase",
+      "description": "[선택] Firebase 사용시 추가합니다.",
+      "path": "Samples~/Firebase"
+    },
+    {
+      "displayName": "ADX",
+      "description": "[선택] ADX(광고) 사용시 추가합니다.\n\n https://docs.adxcorp.kr/unity/integrate",
+      "path": "Samples~/ADX"
     }
   ]
 }
