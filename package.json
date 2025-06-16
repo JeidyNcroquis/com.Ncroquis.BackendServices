@@ -1,0 +1,17 @@
+{
+  "name": "com.ncroquis.backendservices",
+  "version": "0.0.1",
+  "displayName": "Backend Services",
+  "description": "\ubc31\uc5d4\ub4dc \ud1b5\ud569 \uad00\ub9ac\uc790 \n( Firebase, ADX , etc.. )",
+  "unity": "2021.3",
+  "keywords": [
+    "Backend",
+    "Service",
+    "Package"
+  ],
+  "author": {
+    "name": "Ncroquis",
+    "email": "jeidyacademy@ncroquis.com",
+    "url": "https://ncroquis.com"
+  }
+}
