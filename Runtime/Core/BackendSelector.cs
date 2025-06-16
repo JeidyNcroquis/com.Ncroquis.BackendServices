@@ -6,7 +6,14 @@ using VContainer;
 namespace Ncroquis.Backend
 {
 
-    // 다중 백엔드 구현체 를 위한 컨테이너 클래스
+    // 다중 백엔드 구현체 를 위한 컨테이너 추상 클래스
+
+    public enum BackendType
+    {
+        NONE,
+        FIREBASE,
+        ADX
+    }
 
 
     public class BackendContainer
@@ -26,7 +33,7 @@ namespace Ncroquis.Backend
         public IBackendAnalytics Analytics { get; }
         public IBackendData Data { get; }
 
-        private const BackendType FallbackKey = BackendType.FIREBASE;
+        private const BackendType FallbackKey = BackendType.NONE;
 
         [Inject]
         public BackendSelector(BackendContainer container, BackendType selectedKey)

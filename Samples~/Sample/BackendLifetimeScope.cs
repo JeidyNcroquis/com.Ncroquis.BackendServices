@@ -7,6 +7,13 @@ namespace Ncroquis.Backend
 
     // 사용 할 모든 백엔드 서비스 들을 등록
 
+    public enum BackendType
+    {
+        FIREBASE,
+        ADX
+    }
+
+
     public class BackendLifetimeScope : LifetimeScope
     {
         protected override void Configure(IContainerBuilder builder)
