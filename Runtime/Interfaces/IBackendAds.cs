@@ -9,11 +9,6 @@ namespace Ncroquis.Backend
     public interface IBackendAds
     {
 
-        /// ADX SDK를 초기화합니다.
-        void InitializeAdSDK();
-
-
-
         /// 배너 광고를 로드합니다.
         /// <param name="adUnitId">광고 단위 ID</param>        
         void LoadBannerAd(string adUnitId);
@@ -56,8 +51,8 @@ namespace Ncroquis.Backend
         void LoadNativeAd(string adUnitId);
 
 
-        /// 광고 로드 또는 표시 중 오류가 발생할 때 발생하는 이벤트입니다.        
-        event Action<string> OnAdError;
+        /// 광고 로드 또는 표시 중 오류가 발생할 때 발생하는 이벤트입니다.                
+        event Action OnAdError;
 
 
         /// 광고로부터 수익이 발생했을 때 발생하는 이벤트입니다.        

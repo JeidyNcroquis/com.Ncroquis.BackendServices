@@ -10,10 +10,11 @@ namespace Ncroquis.Backend
 
     public class BackendContainer
     {
-        public Dictionary<string, IBackendProvider> Providers { get; } = new(); // Changed to string
-        public Dictionary<string, IBackendAuth> Auths { get; } = new();         // Changed to string
-        public Dictionary<string, IBackendAnalytics> Analytics { get; } = new(); // Changed to string
-        public Dictionary<string, IBackendData> Datas { get; } = new();         // Changed to string
+        public Dictionary<string, IBackendProvider> Providers { get; } = new();
+        public Dictionary<string, IBackendAuth> Auths { get; } = new();
+        public Dictionary<string, IBackendAnalytics> Analytics { get; } = new();
+        public Dictionary<string, IBackendData> Datas { get; } = new();
+        public Dictionary<string, IBackendAds> Ads { get; } = new();
     }
 
 
@@ -24,20 +25,22 @@ namespace Ncroquis.Backend
         public IBackendAuth Auth { get; }
         public IBackendAnalytics Analytics { get; }
         public IBackendData Data { get; }
+        public IBackendAds Ads { get; }
 
         private const string FallbackKey = "NONE";
 
         [Inject]
-        public BackendSelector(BackendContainer container, string selectedKey) // Changed BackendType to string [5]
+        public BackendSelector(BackendContainer container, string selectedKey) 
         {
             var fallbackKey = FallbackKey;
             Provider = TryGet(container.Providers, selectedKey, fallbackKey);
             Auth = TryGet(container.Auths, selectedKey, fallbackKey);
             Analytics = TryGet(container.Analytics, selectedKey, fallbackKey);
             Data = TryGet(container.Datas, selectedKey, fallbackKey);
+            Ads = TryGet(container.Ads, selectedKey, fallbackKey);
         }
 
-        private T TryGet<T>(Dictionary<string, T> map, string key, string fallbackKey) // Changed BackendType to string [6]
+        private T TryGet<T>(Dictionary<string, T> map, string key, string fallbackKey) 
         {
             if (map.TryGetValue(key, out var value))
                 return value;

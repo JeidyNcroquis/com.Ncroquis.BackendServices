@@ -18,17 +18,17 @@
     {
       "displayName": "EntryPoint",
       "description": "[필수] 백엔드 서비스 시작 (초기화)",
-      "path": "Samples~/EntryPoint"
+      "path": "Modules/EntryPoint"
     },    
     {
       "displayName": "Firebase",
       "description": "[선택] Firebase 사용시 추가합니다.",
-      "path": "Samples~/Firebase"
+      "path": "Modules/Firebase"
     },
     {
       "displayName": "ADX",
       "description": "[선택] ADX(광고) 사용시 추가합니다.\nhttps://docs.adxcorp.kr/unity/integrate",
-      "path": "Samples~/ADX"
+      "path": "Modules/ADX"
     }
   ]
 }

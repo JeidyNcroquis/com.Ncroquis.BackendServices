@@ -17,6 +17,7 @@ namespace Ncroquis.Backend
         public abstract IBackendAuth Auth(string key = null);
         public abstract IBackendAnalytics Analytics(string key = null);
         public abstract IBackendData Data(string key = null);
+        public abstract IBackendAds Ads(string key = null);
 
 
         // 명시하지 않으면 기본값으로 첫 번째 등록된 백엔드 타입을 사용
