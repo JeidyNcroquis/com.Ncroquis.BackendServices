@@ -21,9 +21,9 @@ public static class Backend
 public class BackendLifetimeScope : ABackendLifetimeScope
 {
 
-    [Header("ADX Settings")]
-    [SerializeField] string adxAppID = "";
-    [SerializeField] GdprType gdprType = GdprType.POPUP_LOCATION;
+    //[Header("ADX Settings")]
+    // [SerializeField] string adxAppID = "";
+    // [SerializeField] GdprType gdprType = GdprType.POPUP_LOCATION;
 
 
     protected override void OnCustomConfigs(BackendContainer backendContainer)
@@ -39,7 +39,7 @@ public class BackendLifetimeScope : ABackendLifetimeScope
 
         // 예) ADX 관련 등록
         // 유니티 에디터에서 GDPR 동의 팝업을 테스트하기 위해 GdprType.POPUP_DEBUG를 설정합니다       
-        backendContainer.Providers[Backend.ADX] = new AdxBackendProvider(adxAppID, gdprType);
+        //backendContainer.Providers[Backend.ADX] = new AdxBackendProvider(adxAppID, gdprType);
     }
 
     protected override void OnCustomEntryPoint(IContainerBuilder builder)

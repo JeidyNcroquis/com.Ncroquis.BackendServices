@@ -1,14 +1,9 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 using Ncroquis.Backend;
 
-
-public class PlayerProfile
-{
-    public string Name { get; set; }
-    public long Level { get; set; }
-}
 
 
 public class BackendEntryPoint : IInitializable
@@ -20,10 +15,11 @@ public class BackendEntryPoint : IInitializable
     public async void Initialize()
     {
 
+        
         // 초기화 예시
 
         // () 는 기본 -> Firebase 설정
-        await _backendService.Provider(Backend.ADX).InitializeAsync();
+        await _backendService.Provider().InitializeAsync();
 
 
         // bool isSignedIn = await _backendService.Auth().SignInAnonymouslyAsync();

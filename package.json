@@ -1,6 +1,6 @@
 {
   "name": "com.ncroquis.backendservices",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "displayName": "Backend Services",
   "description": "\ubc31\uc5d4\ub4dc \ud1b5\ud569 \uad00\ub9ac\uc790 \n( Firebase, ADX , etc.. )",
   "unity": "2021.3",
@@ -16,9 +16,9 @@
   },
   "samples": [
     {
-      "displayName": "Initialize",
-      "description": "[필수] \ubc31\uc5d4\ub4dc \uc11c\ube44\uc2a4 \ucd08\uae30\ud654 \ubc0f \uc0ac\uc6a9\ubc95",
-      "path": "Samples~/Initialize"
+      "displayName": "EntryPoint",
+      "description": "[필수] 백엔드 서비스 시작 (초기화)",
+      "path": "Samples~/EntryPoint"
     },    
     {
       "displayName": "Firebase",
@@ -27,7 +27,7 @@
     },
     {
       "displayName": "ADX",
-      "description": "[선택] ADX(광고) 사용시 추가합니다.\n\n https://docs.adxcorp.kr/unity/integrate",
+      "description": "[선택] ADX(광고) 사용시 추가합니다.\nhttps://docs.adxcorp.kr/unity/integrate",
       "path": "Samples~/ADX"
     }
   ]
