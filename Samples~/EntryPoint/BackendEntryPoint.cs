@@ -15,11 +15,14 @@ public class BackendEntryPoint : IInitializable
     public async void Initialize()
     {
 
-        
+
         // 초기화 예시
 
         // () 는 기본 -> Firebase 설정
         await _backendService.Provider().InitializeAsync();
+
+        _backendService.Ads().LoadBannerAd("");
+        Debug.Log($"전면 광고 준비 : {_backendService.Ads().IsInterstitialAdReady()}");
 
 
         // bool isSignedIn = await _backendService.Auth().SignInAnonymouslyAsync();

@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
-using AdxUnityPlugin; // ADX SDK 관련 클래스를 사용하기 위해 필요합니다. [1]
+using VContainer; // ADX SDK 관련 클래스를 사용하기 위해 필요합니다. [1]
+using AdxUnityPlugin;
+
 
 namespace Ncroquis.Backend
 {
@@ -10,8 +12,9 @@ namespace Ncroquis.Backend
     /// </summary>
     public class AdxBackendAds : IBackendAds
     {
+
+        [Inject] protected readonly AdxBackendProvider _adxprovider;
                 
-        private bool _isSdkInitialized = false; // SDK 초기화 완료 여부
 
         // ADX 광고 인스턴스
         private AdxBannerAd _bannerAd;
@@ -25,7 +28,7 @@ namespace Ncroquis.Backend
         // Action<string, double> (광고 이름, 수익 금액)으로 구현했습니다.
         public event Action<string, double> OnAdRevenue;
 
-        
+
         /// <summary>
         /// AdxSDK.Initialize 호출 후 ADX 동의 절차가 완료될 때 호출되는 콜백 메서드입니다. 
         /// 이 콜백이 호출된 후, 광고 관련 로직을 진행해야 합니다. 
@@ -33,7 +36,7 @@ namespace Ncroquis.Backend
         private void OnADXConsentCompleted(string s)
         {
             Debug.LogFormat("[ADX Backend Ads] ADX 동의 완료: {0}", s);
-            _isSdkInitialized = true; // SDK 초기화 완료 상태 설정 
+            
         }
 
         /// <summary>
@@ -44,7 +47,7 @@ namespace Ncroquis.Backend
         /// <param name="adUnitId">광고 단위 ID</param>
         public void LoadBannerAd(string adUnitId)
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 배너 광고를 로드할 수 없습니다.");
                 OnAdError?.Invoke(); // 오류 이벤트 트리거
@@ -94,7 +97,7 @@ namespace Ncroquis.Backend
         /// </summary>
         public void ShowBannerAd()
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 배너 광고를 표시할 수 없습니다.");
                 OnAdError?.Invoke();
@@ -137,7 +140,7 @@ namespace Ncroquis.Backend
         /// <param name="adUnitId">광고 단위 ID</param>
         public void LoadInterstitialAd(string adUnitId)
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 전면 광고를 로드할 수 없습니다.");
                 OnAdError?.Invoke(); // 오류 이벤트 트리거
@@ -192,7 +195,7 @@ namespace Ncroquis.Backend
         /// </summary>
         public void ShowInterstitialAd()
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 전면 광고를 표시할 수 없습니다.");
                 OnAdError?.Invoke();
@@ -225,7 +228,7 @@ namespace Ncroquis.Backend
         /// <param name="adUnitId">광고 단위 ID</param>
         public void LoadRewardedAd(string adUnitId)
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 보상형 광고를 로드할 수 없습니다.");
                 OnAdError?.Invoke(); // 오류 이벤트 트리거
@@ -271,8 +274,21 @@ namespace Ncroquis.Backend
                 {
                     // 예상 광고 수익 계산
                     double revenue = ecpm / 1000f;
+
                     Debug.Log($"[ADX Backend Ads] 보상형 광고 수익 발생: {revenue} USD (eCPM: {ecpm})");
-                    OnAdRevenue?.Invoke("ADX Rewarded Ad", revenue); // 수익 이벤트 트리거
+
+                    // Adjust 연동 코드 시작
+                    // "adx_sdk" 소스를 사용하여 AdjustAdRevenue 객체를 인스턴스화합니다
+                    // AdjustAdRevenue adRevenue = new AdjustAdRevenue("adx_sdk");
+                    // // 계산된 수익과 "USD" 통화를 사용하여 AdjustAdRevenue 객체의 세부 정보를 입력합니다
+                    // adRevenue.SetRevenue(revenue, "USD"); 
+                    // // 광고 수익 단위를 "ADX Rewarded Ad"로 설정합니다 [3].
+                    // adRevenue.AdRevenueUnit = "ADX Rewarded Ad"; 
+                    // // Adjust.TrackAdRevenue 메서드를 호출하여 Adjust로 광고 매출 정보를 전송합니다
+                    // Adjust.TrackAdRevenue(adRevenue);
+                    // Adjust 연동 코드 끝
+
+                    OnAdRevenue?.Invoke("ADX Rewarded Ad", revenue); // 기존 OnAdRevenue 이벤트 트리거 유지
                 };
             }
             _rewardedAd.Load(); // 광고 로드 요청
@@ -284,7 +300,7 @@ namespace Ncroquis.Backend
         /// </summary>
         public void ShowRewardedAd()
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 보상형 광고를 표시할 수 없습니다.");
                 OnAdError?.Invoke();
@@ -320,7 +336,7 @@ namespace Ncroquis.Backend
         /// <param name="adUnitId">광고 단위 ID</param>
         public void LoadNativeAd(string adUnitId)
         {
-            if (!_isSdkInitialized)
+            if (!_adxprovider.IsInitialized)
             {
                 Debug.LogError("[ADX Backend Ads] ADX SDK가 초기화되지 않았습니다. 네이티브 광고를 로드할 수 없습니다.");
                 OnAdError?.Invoke();

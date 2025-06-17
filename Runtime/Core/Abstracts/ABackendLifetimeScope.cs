@@ -13,21 +13,24 @@ namespace Ncroquis.Backend
             // 인스턴스 직접 생성
             var backendContainer = new BackendContainer();
 
-            OnCustomConfigs(backendContainer);
+            // 커스텀 Backend 들 컨테이너에 등록
+            OnRegisterBefore(backendContainer);
 
             // 한 번에 등록
             builder.RegisterInstance(backendContainer);
 
             // BackendService 등록
             builder.Register<BackendSelector>(Lifetime.Singleton).AsSelf();
-            builder.Register<BackendService>(Lifetime.Singleton).AsSelf();
-
-            // 초기화 EntryPoint 등록
-            OnCustomEntryPoint(builder);
+            
+            // BackendService, EntryPoint 등록
+            OnRegisterAfter(builder);
         }
 
-        protected abstract void OnCustomConfigs(BackendContainer backendContainer);
-        protected abstract void OnCustomEntryPoint(IContainerBuilder builder);
+        // 필요한 백엔드들을 등록
+        protected abstract void OnRegisterBefore(BackendContainer backendContainer);
+
+        // BackendService , EntryPoint 등록
+        protected abstract void OnRegisterAfter(IContainerBuilder builder);
     }
 
 }

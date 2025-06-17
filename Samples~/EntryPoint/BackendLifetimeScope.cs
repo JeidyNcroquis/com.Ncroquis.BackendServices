@@ -12,6 +12,7 @@ public static class Backend
     public const string NONE = "NONE";
     public const string FIREBASE = "FIREBASE";
     public const string ADX = "ADX";
+    public const string ADJUST = "ADJUST";
 }
 
 
@@ -26,7 +27,7 @@ public class BackendLifetimeScope : ABackendLifetimeScope
     [SerializeField] GdprType gdprType = GdprType.POPUP_LOCATION;
 
 
-    protected override void OnCustomConfigs(BackendContainer backendContainer)
+    protected override void OnRegisterBefore(BackendContainer backendContainer)
     {
         // 여기에 백엔드 서비스에 대한 커스텀 설정을 추가합니다.
 
@@ -43,9 +44,9 @@ public class BackendLifetimeScope : ABackendLifetimeScope
         backendContainer.Ads[Backend.ADX] = new AdxBackendAds();
     }
 
-    protected override void OnCustomEntryPoint(IContainerBuilder builder)
-    {
-        // 여기에 초기화 EntryPoint를 등록합니다.
-        builder.RegisterEntryPoint<BackendEntryPoint>();
+    protected override void OnRegisterAfter(IContainerBuilder builder)
+    {        
+        builder.Register<BackendService>(Lifetime.Singleton).AsSelf();                
+        builder.RegisterEntryPoint<BackendEntryPoint>();        
     }
 }
