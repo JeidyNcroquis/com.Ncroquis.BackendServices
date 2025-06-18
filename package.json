@@ -2,7 +2,7 @@
   "name": "com.ncroquis.backendservices",
   "version": "0.0.10",
   "displayName": "Backend Services",
-  "description": "\ubc31\uc5d4\ub4dc \ud1b5\ud569 \uad00\ub9ac\uc790 \n( Firebase, ADX , Adjust , etc.. )",
+  "description": "\ubc31\uc5d4\ub4dc \ud1b5\ud569 \uad00\ub9ac\uc790 \n( Firebase, ADX , Adjust , etc.. )\n\n\u203bADX \uc0ac\uc6a9\uc2dc :  MessagePipe \uc124\uce58 \ud544\uc694",
   "unity": "2021.3",
   "keywords": [
     "Backend",

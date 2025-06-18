@@ -1,6 +1,7 @@
-
+using System.Threading;
 using System.Threading.Tasks;
 using Firebase;
+using R3;
 using UnityEngine;
 
 
@@ -8,17 +9,31 @@ namespace Ncroquis.Backend
 {
     public class FirebaseBackendProvider : IBackendProvider
     {
-        public string ProviderName => "Firebase";
-        public bool IsInitialized { get; private set; } = false;
+        public string ProviderName => BackendKeys.FIREBASE;
 
-        public async Task<bool> InitializeAsync()
+        private readonly ReactiveProperty<bool> _isInitialized = new(false);
+        public ReadOnlyReactiveProperty<bool> IsInitialized => _isInitialized.ToReadOnlyReactiveProperty();
+
+
+        public async Task InitializeAsync(CancellationToken cancellation = default)
         {
+            if (_isInitialized.Value)
+            {
+                Debug.Log($"[{ProviderName}] 이미 초기화 됨");
+                return;
+            }
+
             var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
-            IsInitialized = dependencyStatus == DependencyStatus.Available;
 
-            Debug.Log($"Firebase Backend Provider Initialization: {IsInitialized}");
-
-            return dependencyStatus == DependencyStatus.Available;
+            if (dependencyStatus == DependencyStatus.Available)
+            {
+                Debug.Log($"[{ProviderName}] 초기화 성공");
+                _isInitialized.Value = true;
+            }
+            else
+            {
+                Debug.LogError($"[{ProviderName}] 초기화 실패: {dependencyStatus}");
+            }
         }
     }
 }

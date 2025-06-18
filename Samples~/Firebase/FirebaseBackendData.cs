@@ -10,7 +10,10 @@ namespace Ncroquis.Backend
 
     public class FirebaseBackendData : IBackendData
     {
+        public string ProviderName => BackendKeys.FIREBASE;
+        
         private FirebaseFirestore db;
+
 
         public FirebaseBackendData()
         {

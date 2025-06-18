@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -6,47 +7,33 @@ using Ncroquis.Backend;
 
 
 
-// 사용 할 모든 백엔드 서비스 들을 등록
-public static class Backend
+
+public class BackendLifetimeScope : LifetimeScope
 {
-    public const string NONE = "NONE";
-    public const string FIREBASE = "FIREBASE";
-    public const string ADX = "ADX";
-    public const string ADJUST = "ADJUST";
-}
+    // [Header("ADX Settings")]
+    // [SerializeField] string adxAppId = "<ADX_APP_ID>";
+    // [SerializeField] GdprType gdprType = GdprType.POPUP_LOCATION;
 
-
-
-//사용법 : 빈 GameObject 에 붙여주세요
-
-public class BackendLifetimeScope : ABackendLifetimeScope
-{
-
-    [Header("ADX Settings")]
-    [SerializeField] string adxAppID = "";
-    [SerializeField] GdprType gdprType = GdprType.POPUP_LOCATION;
-
-
-    protected override void OnRegisterBefore(BackendContainer backendContainer)
+    protected override void Configure(IContainerBuilder builder)
     {
-        // 여기에 백엔드 서비스에 대한 커스텀 설정을 추가합니다.
 
-        // 예) FIREBASE 관련 등록
-        // backendContainer.Providers[Backend.FIREBASE] = new FirebaseBackendProvider();
-        // backendContainer.Auths[Backend.FIREBASE] = new FirebaseBackendAuth();
-        // backendContainer.Analytics[Backend.FIREBASE] = new FirebaseBackendAnalytics();
-        // backendContainer.Datas[Backend.FIREBASE] = new FirebaseBackendData();
+        // // [선택] FIREBASE 관련
+        //builder.Register<FirebaseBackendProvider>(Lifetime.Singleton).As<IBackendProvider>().As<IBackendIdentifiable>();
+        // builder.Register<FirebaseBackendAuth>(Lifetime.Singleton).As<IBackendAuth>().As<IBackendIdentifiable>();
+        // builder.Register<FirebaseBackendAnalytics>(Lifetime.Singleton).As<IBackendAnalytics>().As<IBackendIdentifiable>();
+        // builder.Register<FirebaseBackendData>(Lifetime.Singleton).As<IBackendData>().As<IBackendIdentifiable>();
 
+        // // [선택] ADX 관련
+        // var adxProvider = new AdxBackendProvider(adxAppId, gdprType);
+        // builder.RegisterInstance(adxProvider).As<AdxBackendProvider>().As<IBackendProvider>().As<IBackendIdentifiable>();
+        // builder.Register<AdxBackendAds>(Lifetime.Singleton).As<IBackendAds>().AsSelf();
 
-        // 예) ADX 관련 등록
-        // 유니티 에디터에서 GDPR 동의 팝업을 테스트하기 위해 GdprType.POPUP_DEBUG를 설정합니다       
-        backendContainer.Providers[Backend.ADX] = new AdxBackendProvider(adxAppID, gdprType);
-        backendContainer.Ads[Backend.ADX] = new AdxBackendAds();
-    }
+        //builder.Register<NullBackendProvider>(Lifetime.Singleton).As<IBackendProvider>().As<IBackendIdentifiable>();        
 
-    protected override void OnRegisterAfter(IContainerBuilder builder)
-    {        
-        builder.Register<BackendService>(Lifetime.Singleton).AsSelf();                
-        builder.RegisterEntryPoint<BackendEntryPoint>();        
+        // [필수] 등록해야 작동
+        builder.Register<BackendService>(Lifetime.Singleton).As<IBackendService>().AsSelf();
+        builder.RegisterEntryPoint<BackendInitializer>(Lifetime.Singleton);
     }
 }
+
+

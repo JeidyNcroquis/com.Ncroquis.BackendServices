@@ -9,7 +9,7 @@ namespace Ncroquis.Backend
 
     //인증 관련 기능 인터페이스
 
-    public interface IBackendAuth
+    public interface IBackendAuth : IBackendIdentifiable
     {
         bool IsSignedIn { get; }
         string UserId { get; }
@@ -36,49 +36,6 @@ namespace Ncroquis.Backend
         public bool IsSignedIn { get; set; }
     }
 
-
-    // NULL - 스텁 클래스
-
-    public class NullBackendAuth : IBackendAuth
-    {
-        public bool IsSignedIn => false;
-        public string UserId => null;
-
-
-        public Task<bool> SignInAnonymouslyAsync()
-        {
-            Debug.LogWarning("IBackendAuth] 구현체가 없습니다");
-            return Task.FromResult(false);
-        }
-
-        public Task<bool> SignInWithEmailAsync(string email, string password)
-        {
-            Debug.LogWarning("IBackendAuth] 구현체가 없습니다");
-            return Task.FromResult(false);
-        }
-
-        public Task<bool> SignUpWithEmailAsync(string email, string password)
-        {
-            Debug.LogWarning("IBackendAuth] 구현체가 없습니다");
-            return Task.FromResult(false);
-        }
-
-        public Task SignOutAsync()
-        {
-            Debug.LogWarning("IBackendAuth] 구현체가 없습니다");
-            return Task.CompletedTask;
-        }
-
-        public void AddAuthStateChangedListener(System.Action<AuthStateEventArgs> listener)
-        {
-            Debug.LogWarning("IBackendAuth] 구현체가 없습니다");
-        }
-
-        public void RemoveAuthStateChangedListener(System.Action<AuthStateEventArgs> listener)
-        {
-            Debug.LogWarning("IBackendAuth] 구현체가 없습니다");
-        }
-    }
 
 
 }

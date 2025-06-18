@@ -1,4 +1,6 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 
 namespace Ncroquis.Backend
@@ -6,12 +8,11 @@ namespace Ncroquis.Backend
 
     /// ADX 라이브러리가 지원하는 광고 형식에 기반한 광고 기능 인터페이스입니다.
 
-    public interface IBackendAds
+    public interface IBackendAds : IBackendIdentifiable
     {
 
-        /// 배너 광고를 로드합니다.
-        /// <param name="adUnitId">광고 단위 ID</param>        
-        void LoadBannerAd(string adUnitId);
+        /// 배너 광고를 로드합니다.      
+        Task LoadBannerAsync(string adUnitId, CancellationToken cancellationToken = default);
 
         /// 로드된 배너 광고를 표시합니다.
         void ShowBannerAd();
@@ -22,8 +23,7 @@ namespace Ncroquis.Backend
 
 
         /// 전면 광고를 로드합니다.
-        /// <param name="adUnitId">광고 단위 ID</param>        
-        void LoadInterstitialAd(string adUnitId);
+        Task LoadInterstitialAsync(string adUnitId, CancellationToken cancellationToken = default);
 
         /// 로드된 전면 광고를 표시합니다.
         void ShowInterstitialAd();
@@ -35,7 +35,7 @@ namespace Ncroquis.Backend
 
         /// 보상형 광고를 로드합니다.
         /// <param name="adUnitId">광고 단위 ID</param>
-        void LoadRewardedAd(string adUnitId);
+        Task LoadRewardedAsync(string adUnitId, CancellationToken cancellationToken = default);
 
         /// 로드된 보상형 광고를 표시합니다.
         void ShowRewardedAd();
@@ -45,19 +45,15 @@ namespace Ncroquis.Backend
         bool IsRewardedAdReady();
 
 
-        /// 네이티브 광고를 로드합니다. (주로 Android 및 iOS에서 지원)
-        /// 네이티브 광고의 표시는 구현체에서 UI 통합 방식에 따라 달라질 수 있습니다.        
-        /// <param name="adUnitId">광고 단위 ID</param>        
-        void LoadNativeAd(string adUnitId);
 
 
         /// 광고 로드 또는 표시 중 오류가 발생할 때 발생하는 이벤트입니다.                
         event Action OnAdError;
-
 
         /// 광고로부터 수익이 발생했을 때 발생하는 이벤트입니다.        
         /// <param name="adUnitId">수익이 발생한 광고 단위 ID</param>
         /// <param name="revenueAmount">발생한 수익 금액</param>        
         event Action<string, double> OnAdRevenue;
     }
+
 }
