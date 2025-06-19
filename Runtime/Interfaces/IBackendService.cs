@@ -2,17 +2,27 @@
 
 namespace Ncroquis.Backend
 {
-    public interface IBackendService
+    /// 사용할 백엔드 서비스 식별자    
+    public enum ProviderKey
     {
-        IBackendProvider Provider(string key = null);
-        IBackendAuth Auth(string key = null);
-        IBackendAnalytics Analytics(string key = null);
-        IBackendData Data(string key = null);
-        IBackendAds Ads(string key = null);
+        NONE,
+        FIREBASE,
+        ADX,
+        ADJUST
     }
 
     public interface IBackendIdentifiable
     {
-        string ProviderName { get; }
+        ProviderKey providerKey { get; }
     }
+
+    public interface IBackendService
+    {
+        IBackendProvider Provider(ProviderKey? key = null);
+        IBackendAuth Auth(ProviderKey? key = null);
+        IBackendAnalytics Analytics(ProviderKey? key = null);
+        IBackendData Data(ProviderKey? key = null);
+        IBackendAds Ads(ProviderKey? key = null);
+    }
+
 }

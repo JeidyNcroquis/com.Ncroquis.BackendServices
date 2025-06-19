@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using UnityEngine;
 using Ncroquis.Backend;
+using UnityEngine;
 
 
 public class BackendInitializer : AProvidersInitializerBase
@@ -17,7 +17,7 @@ public class BackendInitializer : AProvidersInitializerBase
 
     protected override async Task OnAfterAllInitialized(CancellationToken cancellation)
     {
-        //Debug.Log($"[{_backendService.Provider().ProviderName}] 테스트");
+        //Debug.Log($"[{_backendService.Provider().providerKey}] 테스트");
 
         await Task.CompletedTask;
     }

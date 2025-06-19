@@ -1,12 +1,11 @@
 using System.Collections.Generic;
-using UnityEngine;
 using Firebase.Analytics;
 
 namespace Ncroquis.Backend
 {
     public class FirebaseBackendAnalytics : IBackendAnalytics
     {
-        public string ProviderName => BackendKeys.FIREBASE;
+        public ProviderKey providerKey => ProviderKey.FIREBASE;
 
 
         public void LogEvent(string eventName, params AnalyticsParameter[] parameters)

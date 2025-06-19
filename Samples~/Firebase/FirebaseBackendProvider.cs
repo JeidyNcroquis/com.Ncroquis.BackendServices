@@ -9,7 +9,7 @@ namespace Ncroquis.Backend
 {
     public class FirebaseBackendProvider : IBackendProvider
     {
-        public string ProviderName => BackendKeys.FIREBASE;
+        public ProviderKey providerKey => ProviderKey.FIREBASE;
 
         private readonly ReactiveProperty<bool> _isInitialized = new(false);
         public ReadOnlyReactiveProperty<bool> IsInitialized => _isInitialized.ToReadOnlyReactiveProperty();
@@ -19,7 +19,7 @@ namespace Ncroquis.Backend
         {
             if (_isInitialized.Value)
             {
-                Debug.Log($"[{ProviderName}] 이미 초기화 됨");
+                Debug.Log($"[{providerKey}] 이미 초기화 됨");
                 return;
             }
 
@@ -27,12 +27,12 @@ namespace Ncroquis.Backend
 
             if (dependencyStatus == DependencyStatus.Available)
             {
-                Debug.Log($"[{ProviderName}] 초기화 성공");
+                Debug.Log($"[{providerKey}] 초기화 성공");
                 _isInitialized.Value = true;
             }
             else
             {
-                Debug.LogError($"[{ProviderName}] 초기화 실패: {dependencyStatus}");
+                Debug.LogError($"[{providerKey}] 초기화 실패: {dependencyStatus}");
             }
         }
     }

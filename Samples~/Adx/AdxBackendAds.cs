@@ -15,17 +15,18 @@ namespace Ncroquis.Backend
     
     /// ADX 라이브러리의 광고 기능 인터페이스(IBackendAds) 구현체    
     public class AdxBackendAds : IBackendAds, IDisposable
-    {
-        
-        public string ProviderName => BackendKeys.ADX;
+    {        
+        public ProviderKey providerKey => ProviderKey.ADX;
 
-
-        // !! 광고별 ID 입력
-        public string bannerAdUnitId;
-        public string interstitialAdUnitId;
-        public string rewardedAdUnitId;
-
-
+#if UNITY_ANDROID
+        string adxBannerAdUnitId = "61ee2b7dcb8c67000100002a"; //테스트용
+        string adxInterstitialAdUnitId = "61ee2e3fcb8c67000100002e"; //테스트용
+        string adxRewardedAdUnitId = "61ee2e91cb8c67000100002f"; //테스트용
+#elif UNITY_IPHONE
+        string adxBannerAdUnitId = "6200fee42a918d0001000003"; //테스트용
+        string adxInterstitialAdUnitId = "6200fef52a918d0001000007"; //테스트용
+        string adxRewardedAdUnitId = "6200ff0c2a918d000100000d"; //테스트용    
+#endif
 
 
         // ADX 광고 인스턴스
@@ -77,9 +78,9 @@ namespace Ncroquis.Backend
             try
             {
                 await Task.WhenAll(
-                    LoadBannerAsync(bannerAdUnitId, cancellationToken),
-                    LoadInterstitialAsync(interstitialAdUnitId, cancellationToken),
-                    LoadRewardedAsync(rewardedAdUnitId, cancellationToken)
+                    LoadBannerAsync(cancellationToken),
+                    LoadInterstitialAsync(cancellationToken),
+                    LoadRewardedAsync(cancellationToken)
                 );
 
                 Debug.Log("All ads loaded successfully!");
@@ -105,7 +106,7 @@ namespace Ncroquis.Backend
         /// IBackendAds 인터페이스는 이러한 파라미터를 제공하지 않으므로, 기본값(320x50, 상단)을 사용합니다.
         ///
         /// 광고 단위 ID
-        public async Task LoadBannerAsync(string adUnitId, CancellationToken cancellationToken = default)
+        public async Task LoadBannerAsync(CancellationToken cancellationToken = default)
         {
             if (!_adxProvider.IsInitialized.CurrentValue)
             {
@@ -120,7 +121,7 @@ namespace Ncroquis.Backend
 
             var tcs = new TaskCompletionSource<bool>();
 
-            _bannerAd = new AdxBannerAd(adUnitId, AdxBannerAd.AD_SIZE_320x50, AdxBannerAd.POSITION_TOP);
+            _bannerAd = new AdxBannerAd(adxBannerAdUnitId, AdxBannerAd.AD_SIZE_320x50, AdxBannerAd.POSITION_TOP);
 
             _bannerAd.OnAdLoaded += () =>
             {
@@ -148,7 +149,7 @@ namespace Ncroquis.Backend
             };
 
             _bannerAd.Load();
-            Debug.Log($"[ADX Backend Ads] 배너 광고 로드 요청: {adUnitId}");
+            Debug.Log($"[ADX Backend Ads] 배너 광고 로드 요청: {adxBannerAdUnitId}");
 
             using (cancellationToken.Register(() => tcs.TrySetCanceled()))
             {
@@ -203,7 +204,7 @@ namespace Ncroquis.Backend
         ///
         /// 전면 광고를 로드합니다.
         /// 
-        public async Task LoadInterstitialAsync(string adUnitId, CancellationToken cancellationToken = default)
+        public async Task LoadInterstitialAsync(CancellationToken cancellationToken = default)
         {
             if (!_adxProvider.IsInitialized.CurrentValue)
             {
@@ -214,7 +215,7 @@ namespace Ncroquis.Backend
 
             if (_interstitialAd == null)
             {
-                _interstitialAd = new AdxInterstitialAd(adUnitId);
+                _interstitialAd = new AdxInterstitialAd(adxInterstitialAdUnitId);
 
                 var tcs = new TaskCompletionSource<bool>();
 
@@ -248,7 +249,7 @@ namespace Ncroquis.Backend
                 };
 
                 _interstitialAd.Load();
-                Debug.Log($"[ADX Backend Ads] 전면 광고 로드 요청: {adUnitId}");
+                Debug.Log($"[ADX Backend Ads] 전면 광고 로드 요청: {adxInterstitialAdUnitId}");
 
                 using (cancellationToken.Register(() => tcs.TrySetCanceled()))
                 {
@@ -296,7 +297,7 @@ namespace Ncroquis.Backend
         ///
         /// 보상형 광고를 로드합니다.                
         /// 
-        public async Task LoadRewardedAsync(string adUnitId, CancellationToken cancellationToken = default)
+        public async Task LoadRewardedAsync(CancellationToken cancellationToken = default)
         {
             if (!_adxProvider.IsInitialized.CurrentValue)
             {
@@ -307,7 +308,7 @@ namespace Ncroquis.Backend
 
             if (_rewardedAd == null)
             {
-                _rewardedAd = new AdxRewardedAd(adUnitId);
+                _rewardedAd = new AdxRewardedAd(adxRewardedAdUnitId);
                 var tcs = new TaskCompletionSource<bool>();
 
                 _rewardedAd.OnRewardedAdLoaded += () =>
@@ -344,7 +345,7 @@ namespace Ncroquis.Backend
                 };
 
                 _rewardedAd.Load();
-                Debug.Log($"[ADX Backend Ads] 보상형 광고 로드 요청: {adUnitId}");
+                Debug.Log($"[ADX Backend Ads] 보상형 광고 로드 요청: {adxRewardedAdUnitId}");
 
                 using (cancellationToken.Register(() => tcs.TrySetCanceled()))
                 {

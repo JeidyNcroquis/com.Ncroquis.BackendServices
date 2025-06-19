@@ -12,7 +12,7 @@ namespace Ncroquis.Backend
     {
 
         /// 배너 광고를 로드합니다.      
-        Task LoadBannerAsync(string adUnitId, CancellationToken cancellationToken = default);
+        Task LoadBannerAsync(CancellationToken cancellationToken = default);
 
         /// 로드된 배너 광고를 표시합니다.
         void ShowBannerAd();
@@ -23,7 +23,7 @@ namespace Ncroquis.Backend
 
 
         /// 전면 광고를 로드합니다.
-        Task LoadInterstitialAsync(string adUnitId, CancellationToken cancellationToken = default);
+        Task LoadInterstitialAsync(CancellationToken cancellationToken = default);
 
         /// 로드된 전면 광고를 표시합니다.
         void ShowInterstitialAd();
@@ -35,7 +35,7 @@ namespace Ncroquis.Backend
 
         /// 보상형 광고를 로드합니다.
         /// <param name="adUnitId">광고 단위 ID</param>
-        Task LoadRewardedAsync(string adUnitId, CancellationToken cancellationToken = default);
+        Task LoadRewardedAsync(CancellationToken cancellationToken = default);
 
         /// 로드된 보상형 광고를 표시합니다.
         void ShowRewardedAd();

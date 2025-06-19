@@ -1,4 +1,3 @@
-
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -6,31 +5,23 @@ using AdxUnityPlugin;
 using R3;
 using VContainer;
 
-
 namespace Ncroquis.Backend
 {
-
     public class AdxBackendProvider : IBackendProvider
     {
-        public string ProviderName => BackendKeys.ADX;
+        public ProviderKey providerKey => ProviderKey.ADX;
 
-        private readonly string _adxAppId;
-        private readonly GdprType _gdprType;
+#if UNITY_ANDROID
+        private readonly string _adxAppId = "61ee18cecb8c670001000023"; //TEST
+#elif UNITY_IPHONE
+        private readonly string _adxAppId = "6200fea42a918d0001000001"; //TEST
+#endif
+        private readonly GdprType _gdprType = GdprType.POPUP_DEBUG;
 
         private readonly ReactiveProperty<bool> _isInitialized = new(false);
         public ReadOnlyReactiveProperty<bool> IsInitialized => _isInitialized.ToReadOnlyReactiveProperty();
 
         private TaskCompletionSource<bool> _initializeTcs;
-
-
-        
-        /// <param name="adxAppId">ADX에서 발급받은 App ID</param>
-        /// <param name="gdprType">GDPR 설정 방식</param>
-        public AdxBackendProvider(string adxAppId, GdprType gdprType = GdprType.POPUP_DEBUG)
-        {
-            _adxAppId = adxAppId;
-            _gdprType = gdprType;
-        }
 
         public Task InitializeAsync(CancellationToken cancellation = default)
         {
@@ -55,6 +46,14 @@ namespace Ncroquis.Backend
                 _initializeTcs.TrySetCanceled(cancellation);
             });
 
+            // UnityEditor 모드에서는 초기화를 생략하고 바로 완료로 처리
+#if UNITY_EDITOR
+            Debug.Log("[ADX Backend Provider] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
+            _isInitialized.Value = true;
+            _initializeTcs.TrySetResult(true);
+            return _initializeTcs.Task;
+#else
+            // 실제 디바이스에서는 기존 초기화 로직 수행
             AdxSDK.SetLogEnable(true);
 
             var adxConfiguration = new ADXConfiguration.Builder()
@@ -65,6 +64,7 @@ namespace Ncroquis.Backend
             AdxSDK.Initialize(adxConfiguration, OnADXConsentCompleted);
 
             return _initializeTcs.Task;
+#endif
         }
 
         private void OnADXConsentCompleted(string s)
@@ -75,5 +75,4 @@ namespace Ncroquis.Backend
             _initializeTcs?.TrySetResult(true);
         }
     }
-
 }

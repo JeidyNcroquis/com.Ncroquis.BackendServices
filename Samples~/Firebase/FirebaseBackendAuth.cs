@@ -7,7 +7,7 @@ namespace Ncroquis.Backend
 {
     public class FirebaseBackendAuth : IBackendAuth
     {
-        public string ProviderName => BackendKeys.FIREBASE;
+        public ProviderKey providerKey => ProviderKey.FIREBASE;
 
         private readonly FirebaseAuth auth;
         private FirebaseUser currentUser;
@@ -65,7 +65,7 @@ namespace Ncroquis.Backend
         private void NotifyAuthStateChanged()
         {
             currentUser = auth.CurrentUser;
-            Debug.Log($"[Firebase Auth] 상태 변경됨 - 로그인됨: {IsSignedIn}");
+            Debug.Log($"[Firebase Auth] 상태 변경됨 - 로그인됨: {IsSignedIn} [{currentUser?.UserId}]");
             AuthStateChanged?.Invoke(new AuthStateEventArgs
             {
                 UserId = currentUser?.UserId,
