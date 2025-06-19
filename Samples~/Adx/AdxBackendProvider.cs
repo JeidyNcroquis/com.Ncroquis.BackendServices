@@ -16,7 +16,7 @@ namespace Ncroquis.Backend
 #elif UNITY_IPHONE
         private readonly string _adxAppId = "6200fea42a918d0001000001"; //TEST
 #endif
-        private readonly GdprType _gdprType = GdprType.POPUP_DEBUG;
+        private readonly GdprType _gdprType = GdprType.POPUP_LOCATION;
 
         private readonly ReactiveProperty<bool> _isInitialized = new(false);
         public ReadOnlyReactiveProperty<bool> IsInitialized => _isInitialized.ToReadOnlyReactiveProperty();

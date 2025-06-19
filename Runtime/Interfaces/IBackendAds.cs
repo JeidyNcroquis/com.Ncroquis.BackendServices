@@ -11,12 +11,8 @@ namespace Ncroquis.Backend
     public interface IBackendAds : IBackendIdentifiable
     {
 
-        /// 배너 광고를 로드합니다.      
-        Task LoadBannerAsync(CancellationToken cancellationToken = default);
-
-        /// 로드된 배너 광고를 표시합니다.
-        void ShowBannerAd();
-
+        /// 배너 광고를 로드합니다. 로드 후 자동 노출
+        Task LoadBannerAsync(CancellationToken cancellationToken = default);        
         /// 표시된 배너 광고를 숨깁니다.
         void HideBannerAd();
 
@@ -24,26 +20,19 @@ namespace Ncroquis.Backend
 
         /// 전면 광고를 로드합니다.
         Task LoadInterstitialAsync(CancellationToken cancellationToken = default);
-
         /// 로드된 전면 광고를 표시합니다.
-        void ShowInterstitialAd();
-
+        void ShowInterstitialAd(Action onShown, Action onClose);
         /// 전면 광고가 로드되어 표시 준비가 되었는지 확인합니다.        
         bool IsInterstitialAdReady();
 
 
 
         /// 보상형 광고를 로드합니다.
-        /// <param name="adUnitId">광고 단위 ID</param>
         Task LoadRewardedAsync(CancellationToken cancellationToken = default);
-
         /// 로드된 보상형 광고를 표시합니다.
-        void ShowRewardedAd();
-
-        /// 보상형 광고가 로드되어 표시 준비가 되었는지 확인합니다.        
-        /// <returns>광고 준비 여부</returns>
+        void ShowRewardedAd(Action<double> onRewarded);
+        /// 보상형 광고가 로드되어 표시 준비가 되었는지 확인합니다.                
         bool IsRewardedAdReady();
-
 
 
 
