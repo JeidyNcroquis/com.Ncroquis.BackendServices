@@ -1,14 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
-using AdxUnityPlugin;
-using R3;
 using VContainer;
+using R3;
 
 namespace Ncroquis.Backend
 {
     public class AdxBackendProvider : IBackendProvider
     {
+
+        [Inject] private readonly ILogger _logger;
+
         public ProviderKey providerKey => ProviderKey.ADX;
 
 #if UNITY_ANDROID
@@ -23,17 +24,20 @@ namespace Ncroquis.Backend
 
         private TaskCompletionSource<bool> _initializeTcs;
 
+
+        
+
         public Task InitializeAsync(CancellationToken cancellation = default)
         {
             if (_isInitialized.Value)
             {
-                Debug.LogWarning("[ADX Backend Provider] ADX SDK는 이미 초기화되었습니다.");
+                _logger.LogWarning("[ADX Backend Provider] ADX SDK는 이미 초기화되었습니다.");
                 return Task.CompletedTask;
             }
 
             if (_initializeTcs != null && !_initializeTcs.Task.IsCompleted)
             {
-                Debug.LogWarning("[ADX Backend Provider] ADX SDK 초기화가 이미 진행 중입니다.");
+                _logger.LogWarning("[ADX Backend Provider] ADX SDK 초기화가 이미 진행 중입니다.");
                 return _initializeTcs.Task;
             }
 
@@ -48,7 +52,7 @@ namespace Ncroquis.Backend
 
             // UnityEditor 모드에서는 초기화를 생략하고 바로 완료로 처리
 #if UNITY_EDITOR
-            Debug.Log("[ADX Backend Provider] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
+            _logger.Log("[ADX Backend Provider] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
             _isInitialized.Value = true;
             _initializeTcs.TrySetResult(true);
             return _initializeTcs.Task;
@@ -69,7 +73,7 @@ namespace Ncroquis.Backend
 
         private void OnADXConsentCompleted(string s)
         {
-            Debug.LogFormat("[ADX Backend Provider] ADX 동의 완료: {0}", s);
+            _logger.Log($"[ADX Backend Provider] ADX 동의 완료: {s}");
 
             _isInitialized.Value = true;
             _initializeTcs?.TrySetResult(true);

@@ -1,13 +1,14 @@
 using System;
 using System.Threading.Tasks;
 using Firebase.Auth;
-using UnityEngine;
+using VContainer;
 
 namespace Ncroquis.Backend
 {
     public class FirebaseBackendAuth : IBackendAuth
     {
         public ProviderKey providerKey => ProviderKey.FIREBASE;
+        private readonly ILogger _logger;
 
         private readonly FirebaseAuth auth;
         private FirebaseUser currentUser;
@@ -17,8 +18,11 @@ namespace Ncroquis.Backend
 
         public event Action<AuthStateEventArgs> AuthStateChanged;
 
-        public FirebaseBackendAuth()
+        [Inject]
+        public FirebaseBackendAuth(ILogger logger)
         {
+            _logger = logger;
+
             auth = FirebaseAuth.DefaultInstance;
             auth.StateChanged += (_, _) => NotifyAuthStateChanged();
         }
@@ -35,7 +39,7 @@ namespace Ncroquis.Backend
         public Task SignOutAsync()
         {
             auth.SignOut();
-            Debug.Log("[Firebase Auth] 로그아웃 완료");
+            _logger.Log("[Firebase Auth] 로그아웃 완료");
             NotifyAuthStateChanged();
             return Task.CompletedTask;
         }
@@ -52,12 +56,12 @@ namespace Ncroquis.Backend
             {
                 await signInTask;
                 NotifyAuthStateChanged();
-                Debug.Log($"[Firebase Auth] {action} 성공 - UserId: {currentUser?.UserId}");
+                _logger.Log($"[Firebase Auth] {action} 성공 - UserId: {currentUser?.UserId}");
                 return true;
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"[Firebase Auth] {action} 실패 - {e.Message}");
+                _logger.LogWarning($"[Firebase Auth] {action} 실패 - {e.Message}");
                 return false;
             }
         }
@@ -65,7 +69,7 @@ namespace Ncroquis.Backend
         private void NotifyAuthStateChanged()
         {
             currentUser = auth.CurrentUser;
-            Debug.Log($"[Firebase Auth] 상태 변경됨 - 로그인됨: {IsSignedIn} [{currentUser?.UserId}]");
+            _logger.Log($"[Firebase Auth] 상태 변경됨 - 로그인됨: {IsSignedIn} [{currentUser?.UserId}]");
             AuthStateChanged?.Invoke(new AuthStateEventArgs
             {
                 UserId = currentUser?.UserId,

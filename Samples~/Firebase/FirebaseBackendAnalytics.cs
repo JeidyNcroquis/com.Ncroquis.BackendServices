@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using Firebase.Analytics;
+using VContainer;
 
 namespace Ncroquis.Backend
 {
     public class FirebaseBackendAnalytics : IBackendAnalytics
     {
+        [Inject] private readonly ILogger _logger;
+
         public ProviderKey providerKey => ProviderKey.FIREBASE;
 
 

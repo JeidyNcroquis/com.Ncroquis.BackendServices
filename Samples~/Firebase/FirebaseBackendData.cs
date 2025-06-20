@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using UnityEngine;
 using Firebase.Firestore;
+using VContainer;
 
 
 
@@ -10,13 +10,15 @@ namespace Ncroquis.Backend
 
     public class FirebaseBackendData : IBackendData
     {
+        private readonly ILogger _logger;
         public ProviderKey providerKey => ProviderKey.FIREBASE;
 
         private FirebaseFirestore db;
 
-
-        public FirebaseBackendData()
+        [Inject]
+        public FirebaseBackendData(ILogger logger)
         {
+            _logger = logger;
             db = FirebaseFirestore.DefaultInstance;
         }
 
@@ -27,7 +29,7 @@ namespace Ncroquis.Backend
                 DocumentSnapshot snapshot = await db.Collection(collection).Document(documentId).GetSnapshotAsync();
                 if (!snapshot.Exists)
                 {
-                    Debug.LogWarning($"[FirebaseBackendData] 문서 없음 - Collection: {collection}, DocumentId: {documentId}");
+                    _logger.LogWarning($"[FirebaseBackendData] 문서 없음 - Collection: {collection}, DocumentId: {documentId}");
                     return default;
                 }
 
@@ -46,7 +48,7 @@ namespace Ncroquis.Backend
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[FirebaseBackendData] GetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
+                _logger.LogError($"[FirebaseBackendData] GetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
                 return default;
             }
         }
@@ -64,7 +66,7 @@ namespace Ncroquis.Backend
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"[FirebaseBackendData] SetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
+                _logger.LogError($"[FirebaseBackendData] SetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
                 return false;
             }
         }

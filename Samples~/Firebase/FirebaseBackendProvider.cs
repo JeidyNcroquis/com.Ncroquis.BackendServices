@@ -1,14 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Firebase;
+using VContainer;
 using R3;
-using UnityEngine;
 
 
 namespace Ncroquis.Backend
 {
     public class FirebaseBackendProvider : IBackendProvider
     {
+        [Inject] private readonly ILogger _logger;
         public ProviderKey providerKey => ProviderKey.FIREBASE;
 
         private readonly ReactiveProperty<bool> _isInitialized = new(false);
@@ -19,7 +20,7 @@ namespace Ncroquis.Backend
         {
             if (_isInitialized.Value)
             {
-                Debug.Log($"[{providerKey}] 이미 초기화 됨");
+                _logger.Log($"[{providerKey}] 이미 초기화 됨");
                 return;
             }
 
@@ -27,12 +28,12 @@ namespace Ncroquis.Backend
 
             if (dependencyStatus == DependencyStatus.Available)
             {
-                Debug.Log($"[{providerKey}] 초기화 성공");
+                _logger.Log($"[{providerKey}] 초기화 성공");
                 _isInitialized.Value = true;
             }
             else
             {
-                Debug.LogError($"[{providerKey}] 초기화 실패: {dependencyStatus}");
+                _logger.LogError($"[{providerKey}] 초기화 실패: {dependencyStatus}");
             }
         }
     }
