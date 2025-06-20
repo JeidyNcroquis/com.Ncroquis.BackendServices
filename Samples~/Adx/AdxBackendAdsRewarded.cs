@@ -1,29 +1,28 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
 using AdxUnityPlugin;
-
 
 namespace Ncroquis.Backend
 {
-
-
     public class AdxBackendAdsRewarded : IDisposable
     {
         private readonly AdxBackendAds _parent;
         private readonly ILogger _logger;
+        private readonly string _adUnitId;
         private AdxRewardedAd _rewardedAd;
         private bool _isLoading;
-        private Action<double> _pendingCallback;
+        private Action<double> _pendingCallback; 
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
-        public AdxBackendAdsRewarded(AdxBackendAds parent, ILogger logger)
+        
+        public AdxBackendAdsRewarded(AdxBackendAds parent, ILogger logger, string adUnitId)
         {
             _parent = parent;
             _logger = logger;
+            _adUnitId = adUnitId;
         }
 
         public async Task LoadRewardedAsync(CancellationToken cancellationToken = default)
@@ -43,13 +42,13 @@ namespace Ncroquis.Backend
             _isLoading = true;
 
             if (_rewardedAd == null)
-                _rewardedAd = new AdxRewardedAd(_parent.adxRewardedAdUnitId);
+                _rewardedAd = new AdxRewardedAd(_adUnitId); // _adUnitId 사용
 
             var tcs = new TaskCompletionSource<bool>();
 
             void OnLoaded()
             {
-                _logger.Log("[ADX 광고] 보상型 광고 로드 완료");
+                _logger.Log("[ADX 광고] 보상형 광고 로드 완료");
                 tcs.TrySetResult(true);
                 _isLoading = false;
             }
@@ -79,7 +78,6 @@ namespace Ncroquis.Backend
                 {
                     _logger.Log("[ADX 광고] 보상형 광고 로드가 취소되었습니다.");
                     _isLoading = false;
-                    // 필요하다면 OnAdError?.Invoke(); 호출 가능
                     return;
                 }
                 catch (Exception ex)
@@ -91,7 +89,6 @@ namespace Ncroquis.Backend
                 }
             }
         }
-
 
         public void ShowRewardedAd(Action<double> onRewarded)
         {
@@ -106,14 +103,14 @@ namespace Ncroquis.Backend
             {
                 _logger.Log("[ADX 광고] 보상형 광고 닫힘. 재로드 시도");
                 _rewardedAd.OnRewardedAdClosed -= HandleAdClosed;
-                OnAdRevenue?.Invoke(_parent.adxRewardedAdUnitId, 0); // 예시: 실제 수익은 SDK에서 받아야 함
+                OnAdRevenue?.Invoke(_adUnitId, 0); // _adUnitId 사용
                 _ = LoadRewardedAsync();
             }
 
             void HandlePaidEvent(double ecpm)
             {
                 onRewarded?.Invoke(ecpm / 1000f);
-                OnAdRevenue?.Invoke(_parent.adxRewardedAdUnitId, ecpm / 1000f);
+                OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000f); // _adUnitId 사용
             }
 
             if (_rewardedAd != null && _rewardedAd.IsLoaded())
@@ -128,7 +125,7 @@ namespace Ncroquis.Backend
             else
             {
                 _logger.Log("[ADX 광고] 보상형 광고 준비되지 않음. 로드 시도");
-                _pendingCallback = onRewarded;
+                _pendingCallback = onRewarded; // 실제로는 _pendingCallback으로 사용하세요
 
                 try
                 {
@@ -153,7 +150,4 @@ namespace Ncroquis.Backend
             _rewardedAd = null;
         }
     }
-    
-
-
 }

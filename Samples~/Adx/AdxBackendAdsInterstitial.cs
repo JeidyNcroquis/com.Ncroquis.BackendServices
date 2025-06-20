@@ -3,14 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdxUnityPlugin;
 
-
-
 namespace Ncroquis.Backend
 {
     public class AdxBackendAdsInterstitial : IDisposable
     {
         private readonly AdxBackendAds _parent;
         private readonly ILogger _logger;
+        private readonly string _adUnitId;
         private AdxInterstitialAd _interstitialAd;
         private bool _isLoading;
         private Action _pendingCallback;
@@ -18,10 +17,12 @@ namespace Ncroquis.Backend
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
-        public AdxBackendAdsInterstitial(AdxBackendAds parent, ILogger logger)
+        // 생성자에서 adUnitId를 받음
+        public AdxBackendAdsInterstitial(AdxBackendAds parent, ILogger logger, string adUnitId)
         {
             _parent = parent;
             _logger = logger;
+            _adUnitId = adUnitId;
         }
 
         public async Task LoadInterstitialAsync(CancellationToken cancellationToken = default)
@@ -41,7 +42,7 @@ namespace Ncroquis.Backend
             _isLoading = true;
 
             if (_interstitialAd == null)
-                _interstitialAd = new AdxInterstitialAd(_parent.adxInterstitialAdUnitId);
+                _interstitialAd = new AdxInterstitialAd(_adUnitId); // adUnitId를 사용
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -77,7 +78,6 @@ namespace Ncroquis.Backend
                 {
                     _logger.Log("[ADX 광고] 전면 광고 로드가 취소되었습니다.");
                     _isLoading = false;
-                    // 필요하다면 OnAdError?.Invoke(); 호출 가능
                     return;
                 }
                 catch (Exception ex)
@@ -90,10 +90,9 @@ namespace Ncroquis.Backend
             }
         }
 
-
         public void ShowInterstitialAd(Action onShown, Action onClose)
         {
-            if (!_parent.IsInitialized)
+            if (!_parent.IsInitialized) // 오타일 수 있음, _parent.IsInitialized로 수정하세요
             {
                 _logger.LogError("[ADX 광고] ADX SDK가 초기화되지 않았습니다. 전면 광고를 표시할 수 없습니다.");
                 OnAdError?.Invoke();
@@ -105,7 +104,7 @@ namespace Ncroquis.Backend
                 _logger.Log($"[ADX 광고] 전면 광고 표시됨. 수익: {ecpm / 1000f}");
                 _interstitialAd.OnPaidEvent -= HandleAdShown;
                 onShown?.Invoke();
-                OnAdRevenue?.Invoke(_parent.adxInterstitialAdUnitId, ecpm / 1000f);
+                OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000f); // _adUnitId 사용
                 _ = LoadInterstitialAsync();
             }
 

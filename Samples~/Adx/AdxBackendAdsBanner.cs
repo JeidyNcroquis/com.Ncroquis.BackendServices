@@ -3,27 +3,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdxUnityPlugin;
 
-
-
 namespace Ncroquis.Backend
 {
     public class AdxBackendAdsBanner : IDisposable
     {
         private readonly AdxBackendAds _parent;
         private readonly ILogger _logger;
+        private readonly string _adUnitId;
         private AdxBannerAd _bannerAd;
         private bool _isLoading;
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
-        public AdxBackendAdsBanner(AdxBackendAds parent, ILogger logger)
+        public AdxBackendAdsBanner(AdxBackendAds parent, ILogger logger, string adUnitId)
         {
             _parent = parent;
             _logger = logger;
+            _adUnitId = adUnitId;
         }
 
-        public async Task LoadBannerAsync(CancellationToken cancellationToken = default)
+        public async Task LoadBannerAsync(BannerSize bannerSize = BannerSize.Size_320x50, BannerPosition bannerPosition = BannerPosition.Top, CancellationToken cancellationToken = default)
         {
             if (_isLoading)
             {
@@ -38,9 +38,9 @@ namespace Ncroquis.Backend
             }
 
             _isLoading = true;
-            
+
             _bannerAd?.Destroy();
-            _bannerAd = new AdxBannerAd(_parent.adxBannerAdUnitId, AdxBannerAd.AD_SIZE_320x50, AdxBannerAd.POSITION_TOP);
+            _bannerAd = new AdxBannerAd(_adUnitId, (int)bannerSize, (int)bannerPosition);
 
             var tcs = new TaskCompletionSource<bool>();
 
@@ -49,7 +49,7 @@ namespace Ncroquis.Backend
                 _logger.Log("[ADX 광고] 배너 광고 로드 완료");
                 tcs.TrySetResult(true);
                 _isLoading = false;
-                OnAdRevenue?.Invoke(_parent.adxBannerAdUnitId, 0); // 실제 수익은 SDK에서 받아야 함
+                OnAdRevenue?.Invoke(_adUnitId, 0); // 실제 수익은 SDK에서 받아야 함
             }
             void OnFailed(int error)
             {
@@ -73,11 +73,10 @@ namespace Ncroquis.Backend
                 {
                     await tcs.Task;
                 }
-                catch (OperationCanceledException) // 또는 TaskCanceledException
+                catch (OperationCanceledException)
                 {
                     _logger.Log("[ADX 광고] 배너 광고 로드가 취소되었습니다.");
                     _isLoading = false;
-                    // 필요하다면 OnAdError?.Invoke(); 호출 가능
                     return;
                 }
                 catch (Exception ex)
@@ -87,9 +86,8 @@ namespace Ncroquis.Backend
                     _isLoading = false;
                     throw;
                 }
-            }            
+            }
         }
-
 
         public void HideBannerAd()
         {

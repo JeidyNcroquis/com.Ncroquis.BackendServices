@@ -11,13 +11,13 @@ namespace Ncroquis.Backend
         public ProviderKey providerKey => ProviderKey.ADX;
 
 #if UNITY_ANDROID
-        public readonly string adxBannerAdUnitId = "61ee2b7dcb8c67000100002a";
-        public readonly string adxInterstitialAdUnitId = "61ee2e3fcb8c67000100002e";
-        public readonly string adxRewardedAdUnitId = "61ee2e91cb8c67000100002f";
+        private readonly string adxBannerAdUnitId = "61ee2b7dcb8c67000100002a";
+        private readonly string adxInterstitialAdUnitId = "61ee2e3fcb8c67000100002e";
+        private readonly string adxRewardedAdUnitId = "61ee2e91cb8c67000100002f";
 #elif UNITY_IPHONE
-        public readonly string adxBannerAdUnitId = "6200fee42a918d0001000003";
-        public readonly string adxInterstitialAdUnitId = "6200fef52a918d0001000007";
-        public readonly string adxRewardedAdUnitId = "6200ff0c2a918d000100000d";
+        private readonly string adxBannerAdUnitId = "6200fee42a918d0001000003";
+        private readonly string adxInterstitialAdUnitId = "6200fef52a918d0001000007";
+        private readonly string adxRewardedAdUnitId = "6200ff0c2a918d000100000d";
 #endif
 
         public event Action OnAdError;
@@ -37,9 +37,9 @@ namespace Ncroquis.Backend
             _adxProvider = provider;
             _logger = logger;
 
-            Banner = new AdxBackendAdsBanner(this, logger);
-            Interstitial = new AdxBackendAdsInterstitial(this, logger);
-            Rewarded = new AdxBackendAdsRewarded(this, logger);
+            Banner = new AdxBackendAdsBanner(this, logger, adxBannerAdUnitId);
+            Interstitial = new AdxBackendAdsInterstitial(this, logger, adxInterstitialAdUnitId);
+            Rewarded = new AdxBackendAdsRewarded(this, logger, adxRewardedAdUnitId);
 
             // 이벤트 전달
             Banner.OnAdError += () => OnAdError?.Invoke();
@@ -70,9 +70,9 @@ namespace Ncroquis.Backend
         {
             _logger.Log("[ADX 광고] 모든 광고 로드 시작");
             await Task.WhenAll(
-                Banner.LoadBannerAsync(cancellationToken),
-                Interstitial.LoadInterstitialAsync(cancellationToken),
-                Rewarded.LoadRewardedAsync(cancellationToken)
+                LoadBannerAsync(BannerSize.Size_320x50, BannerPosition.Top, cancellationToken),
+                LoadInterstitialAsync(cancellationToken),
+                LoadRewardedAsync(cancellationToken)
             );
             _logger.Log("[ADX 광고] 모든 광고 로드 완료");
         }
@@ -89,9 +89,9 @@ namespace Ncroquis.Backend
         
 
         // BANNER
-        public async Task LoadBannerAsync(CancellationToken cancellationToken = default)
+        public async Task LoadBannerAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default)
         {
-            await Banner.LoadBannerAsync(cancellationToken);
+            await Banner.LoadBannerAsync(bannerSize, bannerPosition, cancellationToken);
         }
 
         public void HideBannerAd()
