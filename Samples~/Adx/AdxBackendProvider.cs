@@ -12,7 +12,7 @@ namespace Ncroquis.Backend
 
         public ProviderKey providerKey => ProviderKey.ADX;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_EDITOR
         private readonly string _adxAppId = "61ee18cecb8c670001000023"; //TEST
 #elif UNITY_IPHONE
         private readonly string _adxAppId = "6200fea42a918d0001000001"; //TEST
@@ -31,13 +31,13 @@ namespace Ncroquis.Backend
         {
             if (_isInitialized.Value)
             {
-                _logger.LogWarning("[ADX Backend Provider] ADX SDK는 이미 초기화되었습니다.");
+                _logger.Warning("[ADX] ADX SDK는 이미 초기화되었습니다.");
                 return Task.CompletedTask;
             }
 
             if (_initializeTcs != null && !_initializeTcs.Task.IsCompleted)
             {
-                _logger.LogWarning("[ADX Backend Provider] ADX SDK 초기화가 이미 진행 중입니다.");
+                _logger.Warning("[ADX] ADX SDK 초기화가 이미 진행 중입니다.");
                 return _initializeTcs.Task;
             }
 
@@ -52,7 +52,7 @@ namespace Ncroquis.Backend
 
             // UnityEditor 모드에서는 초기화를 생략하고 바로 완료로 처리
 #if UNITY_EDITOR
-            _logger.Log("[ADX Backend Provider] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
+            _logger.Log("[ADX] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
             _isInitialized.Value = true;
             _initializeTcs.TrySetResult(true);
             return _initializeTcs.Task;
@@ -73,7 +73,7 @@ namespace Ncroquis.Backend
 
         private void OnADXConsentCompleted(string s)
         {
-            _logger.Log($"[ADX Backend Provider] ADX 동의 완료: {s}");
+            _logger.Log($"[ADX] ADX 동의 완료: {s}");
 
             _isInitialized.Value = true;
             _initializeTcs?.TrySetResult(true);

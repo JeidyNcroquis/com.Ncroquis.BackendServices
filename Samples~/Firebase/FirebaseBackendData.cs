@@ -29,7 +29,7 @@ namespace Ncroquis.Backend
                 DocumentSnapshot snapshot = await db.Collection(collection).Document(documentId).GetSnapshotAsync();
                 if (!snapshot.Exists)
                 {
-                    _logger.LogWarning($"[FirebaseBackendData] 문서 없음 - Collection: {collection}, DocumentId: {documentId}");
+                    _logger.Warning($"[FirebaseBackendData] 문서 없음 - Collection: {collection}, DocumentId: {documentId}");
                     return default;
                 }
 
@@ -48,7 +48,7 @@ namespace Ncroquis.Backend
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"[FirebaseBackendData] GetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
+                _logger.Error($"[FirebaseBackendData] GetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
                 return default;
             }
         }
@@ -66,7 +66,7 @@ namespace Ncroquis.Backend
             }
             catch (System.Exception ex)
             {
-                _logger.LogError($"[FirebaseBackendData] SetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
+                _logger.Error($"[FirebaseBackendData] SetDocumentAsync 실패 - Collection: {collection}, DocumentId: {documentId}, Error: {ex.Message}");
                 return false;
             }
         }

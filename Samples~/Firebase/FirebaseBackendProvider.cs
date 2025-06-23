@@ -33,7 +33,7 @@ namespace Ncroquis.Backend
             }
             else
             {
-                _logger.LogError($"[{providerKey}] 초기화 실패: {dependencyStatus}");
+                _logger.Error($"[{providerKey}] 초기화 실패: {dependencyStatus}");
             }
         }
     }

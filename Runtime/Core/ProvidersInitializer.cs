@@ -80,7 +80,7 @@ namespace Ncroquis.Backend
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[ProvidersInitializer] Provider 초기화 중 오류 발생: {ex.Message}");
+                _logger.Log($"[ProvidersInitializer] Provider 초기화 중 오류 발생: {ex.Message}");
                 throw;
             }
 
@@ -89,7 +89,7 @@ namespace Ncroquis.Backend
                 .Where(initialized => initialized)
                 .FirstAsync(cancellation);
 
-            _logger.Log("[ProvidersInitializer] 모든 Provider 초기화가 완료되었습니다.");
+            _logger.Log("[ProvidersInitializer] Provider 초기화를 완료했습니다.");
 
             // 자식 클래스에서 정의한 후처리 호출
             await OnAfterAllInitialized(cancellation);

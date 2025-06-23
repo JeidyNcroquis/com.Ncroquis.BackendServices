@@ -1,14 +1,14 @@
-// Ncroquis/Backend/ABackendService.cs
 
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+
 
 namespace Ncroquis.Backend
 {
     public abstract class ABackendService
     {
-        
+        protected readonly ILogger _logger;
+
         protected readonly Dictionary<ProviderKey, IBackendProvider> _providers;
         protected readonly Dictionary<ProviderKey, IBackendAuth> _auths;
         protected readonly Dictionary<ProviderKey, IBackendAnalytics> _analytics;
@@ -16,13 +16,14 @@ namespace Ncroquis.Backend
         protected readonly Dictionary<ProviderKey, IBackendAds> _ads;
 
         protected ABackendService(
+            ILogger logger,
             IEnumerable<IBackendProvider> providers,
             IEnumerable<IBackendAuth> auths,
             IEnumerable<IBackendAnalytics> analytics,
             IEnumerable<IBackendData> datas,
             IEnumerable<IBackendAds> ads)
         {
-            // 변경된 부분: ProviderName 대신 ProviderKey를 사용
+            _logger = logger;
             _providers = providers.ToDictionary(p => p.providerKey);
             _auths = auths.ToDictionary(p => p.providerKey);
             _analytics = analytics.ToDictionary(p => p.providerKey);
@@ -43,7 +44,7 @@ namespace Ncroquis.Backend
             // 실제 키가 null이면 (기본 키도 없고, 명시적 키도 없으면) 경고를 로그하고 null을 반환합니다.
             if (actualKey == null)
             {
-                Debug.LogWarning($"[BackendService] {label} default key is null. No providers registered.");
+                _logger.Warning($"[BackendService] {label} 기본 키가 null입니다. 등록된 프로바이더가 없습니다.");
                 return null;
             }
 
@@ -51,7 +52,7 @@ namespace Ncroquis.Backend
             if (dict.TryGetValue(actualKey.Value, out var instance))
                 return instance;
 
-            Debug.LogWarning($"[BackendService] {label} key '{actualKey}' not found");
+            _logger.Warning($"[BackendService] {label} 키 '{actualKey}'이(가) 존재하지 않습니다.");
             return null;
         }
     }

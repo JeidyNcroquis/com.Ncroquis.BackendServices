@@ -61,7 +61,7 @@ namespace Ncroquis.Backend
             }
             catch (Exception e)
             {
-                _logger.LogWarning($"[Firebase Auth] {action} 실패 - {e.Message}");
+                _logger.Warning($"[Firebase Auth] {action} 실패 - {e.Message}");
                 return false;
             }
         }
