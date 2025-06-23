@@ -8,16 +8,13 @@ namespace Ncroquis.Backend
     public class AdxBackendProvider : IBackendProvider
     {
 
-        [Inject] private readonly ILogger _logger;
-
         public ProviderKey providerKey => ProviderKey.ADX;
 
-#if UNITY_ANDROID || UNITY_EDITOR
-        private readonly string _adxAppId = "61ee18cecb8c670001000023"; //TEST
-#elif UNITY_IPHONE
-        private readonly string _adxAppId = "6200fea42a918d0001000001"; //TEST
-#endif
+        private readonly string _adxAppId = "";
         private readonly GdprType _gdprType = GdprType.POPUP_LOCATION;
+
+
+        private readonly ILogger _logger;
 
         private readonly ReactiveProperty<bool> _isInitialized = new(false);
         public ReadOnlyReactiveProperty<bool> IsInitialized => _isInitialized.ToReadOnlyReactiveProperty();
@@ -25,7 +22,20 @@ namespace Ncroquis.Backend
         private TaskCompletionSource<bool> _initializeTcs;
 
 
-        
+        [Inject]
+        public AdxBackendProvider(ILogger logger, string adxAppId = "")
+        {
+            _logger = logger;
+
+            // 값이 없거나 빈 문자열이면 플랫폼별 테스트용 사용
+#if UNITY_ANDROID || UNITY_EDITOR
+            _adxAppId = string.IsNullOrEmpty(adxAppId) ? "61ee18cecb8c670001000023" : adxAppId;
+#elif UNITY_IPHONE
+            _adxAppId = string.IsNullOrEmpty(adxAppId) ? "6200fea42a918d0001000001" : adxAppId;
+#endif
+        }
+
+
 
         public Task InitializeAsync(CancellationToken cancellation = default)
         {

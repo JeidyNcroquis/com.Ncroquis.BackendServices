@@ -10,16 +10,6 @@ namespace Ncroquis.Backend
     {
         public ProviderKey providerKey => ProviderKey.ADX;
 
-#if UNITY_ANDROID || UNITY_EDITOR
-        private readonly string adxBannerAdUnitId = "61ee2b7dcb8c67000100002a";
-        private readonly string adxInterstitialAdUnitId = "61ee2e3fcb8c67000100002e";
-        private readonly string adxRewardedAdUnitId = "61ee2e91cb8c67000100002f";
-#elif UNITY_IPHONE
-        private readonly string adxBannerAdUnitId = "6200fee42a918d0001000003";
-        private readonly string adxInterstitialAdUnitId = "6200fef52a918d0001000007";
-        private readonly string adxRewardedAdUnitId = "6200ff0c2a918d000100000d";
-#endif
-
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
@@ -32,14 +22,25 @@ namespace Ncroquis.Backend
         private readonly CancellationTokenSource _cts = new();
 
         [Inject]
-        public AdxBackendAds(AdxBackendProvider provider, ILogger logger)
+        public AdxBackendAds(AdxBackendProvider provider,ILogger logger,string bannerAdUnitId = null,string interstitialAdUnitId = null,string rewardedAdUnitId = null)
         {
             _adxProvider = provider;
             _logger = logger;
 
-            Banner = new AdxBackendAdsBanner(this, logger, adxBannerAdUnitId);
-            Interstitial = new AdxBackendAdsInterstitial(this, logger, adxInterstitialAdUnitId);
-            Rewarded = new AdxBackendAdsRewarded(this, logger, adxRewardedAdUnitId);
+            // 값이 없거나 빈 문자열이면 테스트용 ID 사용
+#if UNITY_ANDROID || UNITY_EDITOR
+            string bannerId = string.IsNullOrEmpty(bannerAdUnitId) ? "61ee2b7dcb8c67000100002a" : bannerAdUnitId;
+            string interstitialId = string.IsNullOrEmpty(interstitialAdUnitId) ? "61ee2e3fcb8c67000100002e" : interstitialAdUnitId;
+            string rewardedId = string.IsNullOrEmpty(rewardedAdUnitId) ? "61ee2e91cb8c67000100002f" : rewardedAdUnitId;
+#elif UNITY_IPHONE
+            string bannerId = string.IsNullOrEmpty(bannerAdUnitId) ? "6200fee42a918d0001000003" : bannerAdUnitId;
+            string interstitialId = string.IsNullOrEmpty(interstitialAdUnitId) ? "6200fef52a918d0001000007" : interstitialAdUnitId;
+            string rewardedId = string.IsNullOrEmpty(rewardedAdUnitId) ? "6200ff0c2a918d000100000d" : rewardedAdUnitId;
+#endif
+
+            Banner = new AdxBackendAdsBanner(this, logger, bannerId);
+            Interstitial = new AdxBackendAdsInterstitial(this, logger, interstitialId);
+            Rewarded = new AdxBackendAdsRewarded(this, logger, rewardedId);
 
             // 이벤트 전달
             Banner.OnAdError += () => OnAdError?.Invoke();
@@ -79,14 +80,14 @@ namespace Ncroquis.Backend
 
 
         // 초기화 됐는지 확인
-        public bool IsInitialized =>_adxProvider.IsInitialized.CurrentValue;
+        public bool IsInitialized => _adxProvider.IsInitialized.CurrentValue;
 
 
 
 
 
         // IBackendAds 구현
-        
+
 
         // BANNER
         public async Task LoadBannerAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default)
@@ -119,7 +120,7 @@ namespace Ncroquis.Backend
 
 
 
-        
+
         public async Task LoadRewardedAsync(CancellationToken cancellationToken = default)
         {
             await Rewarded.LoadRewardedAsync(cancellationToken);
