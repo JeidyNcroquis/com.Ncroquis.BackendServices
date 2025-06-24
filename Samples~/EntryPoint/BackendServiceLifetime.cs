@@ -6,10 +6,12 @@ namespace Ncroquis.Backend
 {
     public class BackendServiceLifetime : LifetimeScope
     {
-        [Header("설정")]
+        [Header("기본 설정")]
         [Tooltip("출력할 로그 레벨을 설정합니다.\n(Info:전체, Error:에러만)")]
         [SerializeField] private LogLevel LogLevel = LogLevel.Info;
-        [SerializeField] private AdxIdConfig adxIdConfig;
+
+        //[Header("ADX 설정")]
+        //[SerializeField] private AdxIdConfig adxIdConfig;
 
         protected override void Configure(IContainerBuilder builder)
         {
@@ -21,13 +23,13 @@ namespace Ncroquis.Backend
 
 
             // [예] ADX 등록
-            builder.Register<AdxBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>()
-                .WithParameter("adxAppId", adxIdConfig.GetAppId());
+            // builder.Register<AdxBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>()
+            //     .WithParameter("adxAppId", adxIdConfig.GetAppId());
 
-            builder.Register<AdxBackendAds>(Lifetime.Singleton).AsSelf().As<IBackendAds>()
-                .WithParameter("bannerAdUnitId", adxIdConfig.GetBannerId())
-                .WithParameter("interstitialAdUnitId", adxIdConfig.GetInterstitialId())
-                .WithParameter("rewardedAdUnitId", adxIdConfig.GetRewardedId());
+            // builder.Register<AdxBackendAds>(Lifetime.Singleton).AsSelf().As<IBackendAds>()
+            //     .WithParameter("bannerAdUnitId", adxIdConfig.GetBannerId())
+            //     .WithParameter("interstitialAdUnitId", adxIdConfig.GetInterstitialId())
+            //     .WithParameter("rewardedAdUnitId", adxIdConfig.GetRewardedId());
 
 
             // [필수] 등록

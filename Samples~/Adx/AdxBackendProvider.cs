@@ -28,7 +28,7 @@ namespace Ncroquis.Backend
             _logger = logger;
 
             // 값이 없거나 빈 문자열이면 플랫폼별 테스트용 사용
-#if UNITY_ANDROID || UNITY_EDITOR
+#if UNITY_ANDROID
             _adxAppId = string.IsNullOrEmpty(adxAppId) ? "61ee18cecb8c670001000023" : adxAppId;
 #elif UNITY_IPHONE
             _adxAppId = string.IsNullOrEmpty(adxAppId) ? "6200fea42a918d0001000001" : adxAppId;

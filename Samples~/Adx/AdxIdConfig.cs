@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "AdxIdConfig", menuName = "Ncroquis/Backend/AdxIdConfig")]
+[CreateAssetMenu(fileName = "AdxIdConfig", menuName = "BackendServices/AdxIdConfig")]
 public class AdxIdConfig : ScriptableObject
 {
     [Header("App ID")]

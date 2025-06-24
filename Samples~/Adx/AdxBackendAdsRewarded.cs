@@ -12,7 +12,7 @@ namespace Ncroquis.Backend
         private readonly string _adUnitId;
         private AdxRewardedAd _rewardedAd;
         private bool _isLoading;
-        private Action<double> _pendingCallback; 
+        private Action _pendingCallback; 
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
@@ -90,7 +90,7 @@ namespace Ncroquis.Backend
             }
         }
 
-        public void ShowRewardedAd(Action<double> onRewarded)
+        public void ShowRewardedAd(Action onRewarded)
         {
             if (!_parent.IsInitialized)
             {
@@ -109,7 +109,7 @@ namespace Ncroquis.Backend
 
             void HandlePaidEvent(double ecpm)
             {
-                onRewarded?.Invoke(ecpm / 1000f);
+                onRewarded?.Invoke();
                 OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000f); // _adUnitId 사용
             }
 

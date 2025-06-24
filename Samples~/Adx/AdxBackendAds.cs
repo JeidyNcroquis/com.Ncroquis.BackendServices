@@ -126,7 +126,7 @@ namespace Ncroquis.Backend
             await Rewarded.LoadRewardedAsync(cancellationToken);
         }
 
-        public void ShowRewardedAd(Action<double> onRewarded)
+        public void ShowRewardedAd(Action onRewarded)
         {
             Rewarded.ShowRewardedAd(onRewarded);
         }

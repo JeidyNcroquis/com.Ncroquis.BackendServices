@@ -61,7 +61,7 @@ namespace Ncroquis.Backend
         /// <summary>
         /// 로드된 보상형 광고를 표시합니다.
         /// </summary>
-        void ShowRewardedAd(Action<double> onRewarded);
+        void ShowRewardedAd(Action onRewarded);
 
         /// <summary>
         /// 보상형 광고가 로드되어 표시 준비가 되었는지 확인합니다.
