@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine; // UnityEngine 네임스페이스는 현재 이 클래스에서 직접 사용되지는 않지만, 프로젝트 구조상 포함되어 있는 것으로 보입니다.
+using UnityEngine;
 using R3;
 
 
@@ -15,6 +15,7 @@ namespace Ncroquis.Backend
 
         Task InitializeAsync(CancellationToken cancellation = default);
     }
+
 
 
     // NULL - 스텁 클래스
@@ -38,7 +39,7 @@ namespace Ncroquis.Backend
         /// NullProvider는 항상 초기화된 상태로 간주됩니다.        
         public ReadOnlyReactiveProperty<bool> IsInitialized => _isInitialized.ToReadOnlyReactiveProperty();
 
-        
+
         /// 비동기 초기화 작업을 수행합니다. NullProvider는 아무런 초기화 작업도 수행하지 않고 즉시 완료됩니다.        
         /// <param name="cancellation">취소 토큰 (NullProvider에서는 사용되지 않음).</param>        
         public Task InitializeAsync(CancellationToken cancellation = default)

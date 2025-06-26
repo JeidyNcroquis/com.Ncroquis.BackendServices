@@ -60,7 +60,7 @@ namespace Ncroquis.Backend
                     _allInitialized.Value = isAllInitialized;
 
                     if (isAllInitialized)
-                        _logger.Log("[ProvidersInitializer] 모든 Provider가 성공적으로 초기화되었습니다!");
+                        _logger.Log("[ProvidersInitializer] 모든 Provider 초기화 성공!");
                 });
         }
 
