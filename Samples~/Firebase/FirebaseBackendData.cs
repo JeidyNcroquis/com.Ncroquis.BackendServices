@@ -8,7 +8,7 @@ using VContainer;
 namespace Ncroquis.Backend
 {
 
-    public class FirebaseBackendData : IBackendData
+    public class FirebaseBackendDataStore : IBackendDataStore
     {
         private readonly ILogger _logger;
         public ProviderKey providerKey => ProviderKey.FIREBASE;
@@ -16,13 +16,13 @@ namespace Ncroquis.Backend
         private FirebaseFirestore db;
 
         [Inject]
-        public FirebaseBackendData(ILogger logger)
+        public FirebaseBackendDataStore(ILogger logger)
         {
             _logger = logger;
             db = FirebaseFirestore.DefaultInstance;
         }
 
-        public async Task<T> GetDocumentAsync<T>(string collection, string documentId)
+        public async Task<T> LoadAsync<T>(string collection, string documentId)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace Ncroquis.Backend
         }
 
 
-        public async Task<bool> SetDocumentAsync<T>(string collection, string documentId, T data)
+        public async Task<bool> SaveAsync<T>(string collection, string documentId, T data)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace Ncroquis.Backend
             }
         }
 
-        public async Task<bool> DeleteDocumentAsync(string collection, string documentId)
+        public async Task<bool> DeleteAsync(string collection, string documentId)
         {
             try
             {

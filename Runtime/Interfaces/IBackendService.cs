@@ -21,7 +21,7 @@ namespace Ncroquis.Backend
         IBackendProvider Provider(ProviderKey? key = null);
         IBackendAuth Auth(ProviderKey? key = null);
         IBackendAnalytics Analytics(ProviderKey? key = null);
-        IBackendData Data(ProviderKey? key = null);
+        IBackendDataStore DataStore(ProviderKey? key = null);
         IBackendAds Ads(ProviderKey? key = null);
     }
 

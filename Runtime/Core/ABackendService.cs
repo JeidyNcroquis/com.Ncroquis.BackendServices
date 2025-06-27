@@ -12,7 +12,7 @@ namespace Ncroquis.Backend
         protected readonly Dictionary<ProviderKey, IBackendProvider> _providers;
         protected readonly Dictionary<ProviderKey, IBackendAuth> _auths;
         protected readonly Dictionary<ProviderKey, IBackendAnalytics> _analytics;
-        protected readonly Dictionary<ProviderKey, IBackendData> _datas;
+        protected readonly Dictionary<ProviderKey, IBackendDataStore> _datastores;
         protected readonly Dictionary<ProviderKey, IBackendAds> _ads;
 
         protected ABackendService(
@@ -20,14 +20,14 @@ namespace Ncroquis.Backend
             IEnumerable<IBackendProvider> providers,
             IEnumerable<IBackendAuth> auths,
             IEnumerable<IBackendAnalytics> analytics,
-            IEnumerable<IBackendData> datas,
+            IEnumerable<IBackendDataStore> datastores,
             IEnumerable<IBackendAds> ads)
         {
             _logger = logger;
             _providers = providers.ToDictionary(p => p.providerKey);
             _auths = auths.ToDictionary(p => p.providerKey);
             _analytics = analytics.ToDictionary(p => p.providerKey);
-            _datas = datas.ToDictionary(p => p.providerKey);
+            _datastores = datastores.ToDictionary(p => p.providerKey);
             _ads = ads.ToDictionary(p => p.providerKey);
         }
 

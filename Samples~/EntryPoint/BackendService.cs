@@ -25,7 +25,7 @@ namespace Ncroquis.Backend
 
         // 데이터 서비스를 선택적으로 가져오는 메서드입니다.
         // 예 : Firestore 등 
-        public IBackendData Data(ProviderKey? key = null) => Get(_datas, key, nameof(IBackendData));
+        public IBackendDataStore DataStore(ProviderKey? key = null) => Get(_datastores, key, nameof(IBackendDataStore));
 
         // 광고 서비스를 선택적으로 가져오는 메서드입니다.
         // 예 : Adx 광고
@@ -39,9 +39,9 @@ namespace Ncroquis.Backend
             IEnumerable<IBackendProvider> providers,
             IEnumerable<IBackendAuth> auths,
             IEnumerable<IBackendAnalytics> analytics,
-            IEnumerable<IBackendData> datas,
+            IEnumerable<IBackendDataStore> datastores,
             IEnumerable<IBackendAds> ads
-        ) : base(logger, providers, auths, analytics, datas, ads)
+        ) : base(logger, providers, auths, analytics, datastores, ads)
         {            
         }
 
