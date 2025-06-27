@@ -31,7 +31,7 @@ namespace Ncroquis.Backend
         /// <summary>
         /// 배너 광고를 지정된 크기와 위치로 로드합니다. 로드 후 자동 노출
         /// </summary>
-        Task LoadBannerAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default);
+        Task LoadBannerAdAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 표시된 배너 광고를 숨깁니다.
@@ -41,12 +41,12 @@ namespace Ncroquis.Backend
         /// <summary>
         /// 전면 광고를 로드합니다.
         /// </summary>
-        Task LoadInterstitialAsync(CancellationToken cancellationToken = default);
+        Task LoadInterstitialAdAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 로드된 전면 광고를 표시합니다.
         /// </summary>
-        void ShowInterstitialAd(Action onShown, Action onClose);
+        void ShowInterstitialAd(Action onShown);
 
         /// <summary>
         /// 전면 광고가 로드되어 표시 준비가 되었는지 확인합니다.
@@ -56,7 +56,7 @@ namespace Ncroquis.Backend
         /// <summary>
         /// 보상형 광고를 로드합니다.
         /// </summary>
-        Task LoadRewardedAsync(CancellationToken cancellationToken = default);
+        Task LoadRewardedAdAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 로드된 보상형 광고를 표시합니다.

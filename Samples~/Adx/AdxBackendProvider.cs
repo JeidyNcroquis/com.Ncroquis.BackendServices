@@ -27,7 +27,12 @@ namespace Ncroquis.Backend
         {
             _logger = logger;
 
-            // 값이 없거나 빈 문자열이면 플랫폼별 테스트용 사용
+
+            if (string.IsNullOrEmpty(adxAppId))
+                _logger.Warning("[ADX PROVIDER] adxAppId가 비어 있습니다. 테스트용 ID가 사용됩니다.");
+            
+
+            // 값이 없거나 빈 문자열이면 플랫폼별 테스트용 사용            
 #if UNITY_ANDROID
             _adxAppId = string.IsNullOrEmpty(adxAppId) ? "61ee18cecb8c670001000023" : adxAppId;
 #elif UNITY_IPHONE
@@ -41,13 +46,13 @@ namespace Ncroquis.Backend
         {
             if (_isInitialized.Value)
             {
-                _logger.Warning("[ADX] ADX SDK는 이미 초기화되었습니다.");
+                _logger.Warning("[ADX PROVIDER] ADX SDK는 이미 초기화되었습니다.");
                 return Task.CompletedTask;
             }
 
             if (_initializeTcs != null && !_initializeTcs.Task.IsCompleted)
             {
-                _logger.Warning("[ADX] ADX SDK 초기화가 이미 진행 중입니다.");
+                _logger.Warning("[ADX PROVIDER] ADX SDK 초기화가 이미 진행 중입니다.");
                 return _initializeTcs.Task;
             }
 
@@ -62,7 +67,7 @@ namespace Ncroquis.Backend
 
             // UnityEditor 모드에서는 초기화를 생략하고 바로 완료로 처리
 #if UNITY_EDITOR
-            _logger.Log("[ADX] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
+            _logger.Log("[ADX PROVIDER] Editor모드에서는 ADX 초기화가 안돼서 생략합니다.");
             _isInitialized.Value = true;
             _initializeTcs.TrySetResult(true);
             return _initializeTcs.Task;
@@ -75,18 +80,17 @@ namespace Ncroquis.Backend
                 .SetGdprType(_gdprType)
                 .Build();
 
-            AdxSDK.Initialize(adxConfiguration, OnADXConsentCompleted);
+            AdxSDK.Initialize(adxConfiguration, (s) => 
+            {
+                _logger.Log($"[ADX PROVIDER] ADX 동의 완료: {s}");
+
+                _isInitialized.Value = true;
+                _initializeTcs?.TrySetResult(true);
+            });
 
             return _initializeTcs.Task;
 #endif
         }
 
-        private void OnADXConsentCompleted(string s)
-        {
-            _logger.Log($"[ADX] ADX 동의 완료: {s}");
-
-            _isInitialized.Value = true;
-            _initializeTcs?.TrySetResult(true);
-        }
     }
 }

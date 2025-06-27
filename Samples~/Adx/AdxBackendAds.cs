@@ -71,9 +71,9 @@ namespace Ncroquis.Backend
         {
             _logger.Log("[ADX] 모든 광고 로드 시작");
             await Task.WhenAll(
-                LoadBannerAsync(BannerSize.Size_320x50, BannerPosition.Top, cancellationToken),
-                LoadInterstitialAsync(cancellationToken),
-                LoadRewardedAsync(cancellationToken)
+                LoadBannerAdAsync(BannerSize.Size_320x50, BannerPosition.Top, cancellationToken),
+                LoadInterstitialAdAsync(cancellationToken),
+                LoadRewardedAdAsync(cancellationToken)
             );
             _logger.Log("[ADX] 모든 광고 로드 완료");
         }
@@ -90,7 +90,7 @@ namespace Ncroquis.Backend
 
 
         // BANNER
-        public async Task LoadBannerAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default)
+        public async Task LoadBannerAdAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default)
         {
             await Banner.LoadBannerAsync(bannerSize, bannerPosition, cancellationToken);
         }
@@ -103,14 +103,14 @@ namespace Ncroquis.Backend
 
 
         //INTERSTITIAL
-        public async Task LoadInterstitialAsync(CancellationToken cancellationToken = default)
+        public async Task LoadInterstitialAdAsync(CancellationToken cancellationToken = default)
         {
             await Interstitial.LoadInterstitialAsync(cancellationToken);
         }
 
-        public void ShowInterstitialAd(Action onShown, Action onClose)
+        public void ShowInterstitialAd(Action onShown)
         {
-            Interstitial.ShowInterstitialAd(onShown, onClose);
+            _= Interstitial.ShowInterstitialAdAsync(onShown);
         }
 
         public bool IsInterstitialAdReady()
@@ -121,14 +121,14 @@ namespace Ncroquis.Backend
 
 
 
-        public async Task LoadRewardedAsync(CancellationToken cancellationToken = default)
+        public async Task LoadRewardedAdAsync(CancellationToken cancellationToken = default)
         {
-            await Rewarded.LoadRewardedAsync(cancellationToken);
+            await Rewarded.LoadRewardedAdAsync(cancellationToken);
         }
 
         public void ShowRewardedAd(Action onRewarded)
         {
-            Rewarded.ShowRewardedAd(onRewarded);
+            _= Rewarded.ShowRewardedAdAsync(onRewarded);
         }
 
         public bool IsRewardedAdReady()

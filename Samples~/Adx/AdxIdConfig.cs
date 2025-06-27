@@ -1,55 +1,64 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "AdxIdConfig", menuName = "BackendServices/AdxIdConfig")]
-public class AdxIdConfig : ScriptableObject
+namespace Ncroquis.Backend
 {
-    [Header("App ID")]
-    public string androidAppId;
-    public string iosAppId;
 
-    [Header("광고 유닛 ID - Android")]
-    public string androidBannerId;
-    public string androidInterstitialId;
-    public string androidRewardedId;
+        [CreateAssetMenu(fileName = "AdxIdConfig", menuName = "BackendServices/AdxIdConfig")]
+        public class AdxIdConfig : ScriptableObject
+        {
 
-    [Header("광고 유닛 ID - iOS")]
-    public string iosBannerId;
-    public string iosInterstitialId;
-    public string iosRewardedId;
+                [Header("광고 동의")]
+                public GdprType gdprType;
 
-    public string GetAppId()
-    {
+                [Header("App ID")]
+                public string androidAppId;
+                public string iosAppId;
+
+                [Header("광고 유닛 ID - Android")]
+                public string androidBannerId;
+                public string androidInterstitialId;
+                public string androidRewardedId;
+
+                [Header("광고 유닛 ID - iOS")]
+                public string iosBannerId;
+                public string iosInterstitialId;
+                public string iosRewardedId;
+
+                public string GetAppId()
+                {
 #if UNITY_ANDROID || UNITY_EDITOR
-        return androidAppId;
+                        return androidAppId;
 #elif UNITY_IPHONE
         return iosAppId;
 #endif
-    }
+                }
 
-    public string GetBannerId()
-    {
+                public string GetBannerId()
+                {
 #if UNITY_ANDROID || UNITY_EDITOR
-        return androidBannerId;
+                        return androidBannerId;
 #elif UNITY_IPHONE
         return iosBannerId;
 #endif
-    }
+                }
 
-    public string GetInterstitialId()
-    {
+                public string GetInterstitialId()
+                {
 #if UNITY_ANDROID || UNITY_EDITOR
-        return androidInterstitialId;
+                        return androidInterstitialId;
 #elif UNITY_IPHONE
         return iosInterstitialId;
 #endif
-    }
+                }
 
-    public string GetRewardedId()
-    {
+                public string GetRewardedId()
+                {
 #if UNITY_ANDROID || UNITY_EDITOR
-        return androidRewardedId;
+                        return androidRewardedId;
 #elif UNITY_IPHONE
         return iosRewardedId;
 #endif
-    }
+                }
+        }
+
 }

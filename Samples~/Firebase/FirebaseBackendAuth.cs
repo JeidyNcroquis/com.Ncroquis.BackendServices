@@ -69,7 +69,7 @@ namespace Ncroquis.Backend
         private void NotifyAuthStateChanged()
         {
             currentUser = auth.CurrentUser;
-            _logger.Log($"[Firebase Auth] 상태 변경됨 - 로그인됨: {IsSignedIn} [{currentUser?.UserId}]");
+            _logger.Log($"[Firebase Auth] 상태 변경됨 - 로그인: {IsSignedIn} [{currentUser?.UserId}]");
             AuthStateChanged?.Invoke(new AuthStateEventArgs
             {
                 UserId = currentUser?.UserId,

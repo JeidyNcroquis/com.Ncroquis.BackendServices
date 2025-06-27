@@ -28,9 +28,7 @@ namespace Ncroquis.Backend
     {
         public LogLevel Level { get; set; } = LogLevel.Info;
 
-        private string COLOR_INFO = "white";
-        private string COLOR_WARNING = "yellow";
-        private string COLOR_ERROR = "red";
+        private string COLOR = "white";
 
         public UnityLogger(LogLevel level = LogLevel.Info)
         {
@@ -40,19 +38,19 @@ namespace Ncroquis.Backend
         public void Log(string message)
         {
             if (Level > LogLevel.Info) return;
-            Debug.Log($"<color={COLOR_INFO}>{message}</color>");
+            Debug.Log($"<color={COLOR}>{message}</color>");
         }
 
         public void Warning(string message)
         {
             if (Level > LogLevel.Warning) return;
-            Debug.LogWarning($"<color={COLOR_WARNING}>{message}</color>");
+            Debug.LogWarning(message);
         }
 
         public void Error(string message)
         {
             if (Level > LogLevel.Error) return;
-            Debug.LogError($"<color={COLOR_ERROR}>{message}</color>");
+            Debug.LogError(message);
         }
     }
 }

@@ -49,3 +49,4 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   LogLevel: 0
+  adxIdConfig: {fileID: 0}

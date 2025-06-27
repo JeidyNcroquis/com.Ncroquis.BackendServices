@@ -17,134 +17,130 @@ namespace Ncroquis.Backend
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
-        // 생성자에서 adUnitId를 받음
         public AdxBackendAdsInterstitial(AdxBackendAds parent, ILogger logger, string adUnitId)
         {
             _parent = parent;
             _logger = logger;
             _adUnitId = adUnitId;
+            
         }
+
+        public bool IsInterstitialAdReady() => _interstitialAd?.IsLoaded() == true;
+        
 
         public async Task LoadInterstitialAsync(CancellationToken cancellationToken = default)
         {
-            if (_isLoading)
+            if (_isLoading || !_parent.IsInitialized)
             {
-                _logger.Log("[ADX] 전면 광고 이미 로딩 중입니다. 무시합니다.");
-                return;
-            }
-            if (!_parent.IsInitialized)
-            {
-                _logger.Error("[ADX] ADX SDK가 초기화되지 않았습니다. 전면 광고를 로드할 수 없습니다.");
-                OnAdError?.Invoke();
+                if (_isLoading)
+                {
+                    _logger.Log("[ADX] 전면 광고 이미 로딩 중입니다.");
+                }
+                else
+                {
+                    _logger.Error("[ADX] SDK가 초기화되지 않았습니다.");
+                    OnAdError?.Invoke();
+                }
                 return;
             }
 
             _isLoading = true;
-
-            if (_interstitialAd == null)
-                _interstitialAd = new AdxInterstitialAd(_adUnitId); // adUnitId를 사용
+            InitializeAdIfNeeded();
 
             var tcs = new TaskCompletionSource<bool>();
 
-            void OnLoaded()
-            {
-                _logger.Log("[ADX] 전면 광고 로드 완료");
-                tcs.TrySetResult(true);
-                _isLoading = false;
-            }
-            void OnFailed(int error)
-            {
-                _logger.Error($"[ADX] 전면 광고 로드 실패: {error}");
-                OnAdError?.Invoke();
-                tcs.TrySetException(new Exception(error.ToString()));
-                _isLoading = false;
-            }
+            void OnLoaded() => tcs.TrySetResult(true);
+            void OnFailed(int error) => tcs.TrySetException(new Exception(error.ToString()));
 
-            _interstitialAd.OnAdLoaded -= OnLoaded;
-            _interstitialAd.OnAdFailedToLoad -= OnFailed;
             _interstitialAd.OnAdLoaded += OnLoaded;
             _interstitialAd.OnAdFailedToLoad += OnFailed;
 
-            _interstitialAd.Load();
-            _logger.Log("[ADX] 전면 광고 로드 요청");
-
-            using (cancellationToken.Register(() => tcs.TrySetCanceled()))
+            try
             {
-                try
+                _logger.Log("[ADX] 전면 광고 로드 요청");
+                _interstitialAd.Load();
+
+                using (cancellationToken.Register(() => tcs.TrySetCanceled()))
                 {
                     await tcs.Task;
+                    _logger.Log("[ADX] 전면 광고 로드 완료");
                 }
-                catch (OperationCanceledException)
-                {
-                    _logger.Log("[ADX] 전면 광고 로드가 취소되었습니다.");
-                    _isLoading = false;
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"[ADX] 전면 광고 로드 중 예외 발생: {ex.Message}");
-                    OnAdError?.Invoke();
-                    _isLoading = false;
-                    throw;
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[ADX] 전면 광고 로드 실패: {ex.Message}");
+                OnAdError?.Invoke();
+            }
+            finally
+            {
+                _interstitialAd.OnAdLoaded -= OnLoaded;
+                _interstitialAd.OnAdFailedToLoad -= OnFailed;
+                _isLoading = false;
             }
         }
 
-        public void ShowInterstitialAd(Action onShown, Action onClose)
+        public async Task ShowInterstitialAdAsync(Action onShown)
         {
-            if (!_parent.IsInitialized) // 오타일 수 있음, _parent.IsInitialized로 수정하세요
+            if (!_parent.IsInitialized)
             {
-                _logger.Error("[ADX] ADX SDK가 초기화되지 않았습니다. 전면 광고를 표시할 수 없습니다.");
+                _logger.Warning("[ADX] SDK가 초기화되지 않았습니다.");
                 OnAdError?.Invoke();
                 return;
             }
 
-            void HandleAdShown(double ecpm)
-            {
-                _logger.Log($"[ADX] 전면 광고 표시됨. 수익: {ecpm / 1000f}");
-                _interstitialAd.OnPaidEvent -= HandleAdShown;
-                onShown?.Invoke();
-                OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000f); // _adUnitId 사용
-                _ = LoadInterstitialAsync();
-            }
+            _pendingCallback = onShown;
 
-            void HandleAdClosed()
+            if (IsInterstitialAdReady())
             {
-                _logger.Log("[ADX] 전면 광고 닫힘");
-                _interstitialAd.OnAdClosed -= HandleAdClosed;
-                onClose?.Invoke();
-                _ = LoadInterstitialAsync();
-            }
-
-            if (_interstitialAd != null && _interstitialAd.IsLoaded())
-            {
-                _interstitialAd.OnPaidEvent -= HandleAdShown;
-                _interstitialAd.OnPaidEvent += HandleAdShown;
-                _interstitialAd.OnAdClosed -= HandleAdClosed;
-                _interstitialAd.OnAdClosed += HandleAdClosed;
-                _interstitialAd.Show();
                 _logger.Log("[ADX] 전면 광고 표시 요청");
+                _interstitialAd.Show();
+                return;
             }
-            else
-            {
-                _logger.Log("[ADX] 전면 광고 준비되지 않음. 로드 시도");
-                _pendingCallback = onShown;
 
-                try
+            try
+            {
+                _logger.Log("[ADX] 전면 광고 준비되지 않음. 로드 후 표시 시도");
+                await LoadInterstitialAsync();
+
+                if (IsInterstitialAdReady())
                 {
-                    _ = LoadInterstitialAsync();
+                    _logger.Log("[ADX] 전면 광고 로드 성공. 즉시 표시");
+                    _interstitialAd.Show();
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.Error($"[ADX] 전면 광고 로드 실패: {ex.Message}");
+                    _logger.Warning("[ADX] 광고 로드 후에도 준비되지 않음");
                     OnAdError?.Invoke();
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.Warning($"[ADX] 전면 광고 로드 실패: {ex.Message}");
+                OnAdError?.Invoke();
+            }
         }
 
-        public bool IsInterstitialAdReady()
+        
+
+        private void InitializeAdIfNeeded()
         {
-            return _interstitialAd != null && _interstitialAd.IsLoaded();
+            if (_interstitialAd == null)
+            {
+                _interstitialAd = new AdxInterstitialAd(_adUnitId);
+
+                _interstitialAd.OnAdClosed += () =>
+                {
+                    _logger.Log("[ADX] 전면 광고 닫힘. 재로드 시도");
+                    _ = LoadInterstitialAsync();
+                };
+
+                _interstitialAd.OnPaidEvent += (ecpm) =>
+                {
+                    _pendingCallback?.Invoke();
+                    _pendingCallback = null;
+                    OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0);
+                };
+            }
         }
 
         public void Dispose()

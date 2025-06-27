@@ -28,12 +28,12 @@ namespace Ncroquis.Backend
 
             // [예] ADX 등록
             // builder.Register<AdxBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>()
-            //     .WithParameter("adxAppId", adxIdConfig.GetAppId());
+            //     .WithParameter("adxAppId", adxIdConfig?.GetAppId() ?? default);
 
             // builder.Register<AdxBackendAds>(Lifetime.Singleton).AsSelf().As<IBackendAds>()
-            //     .WithParameter("bannerAdUnitId", adxIdConfig.GetBannerId())
-            //     .WithParameter("interstitialAdUnitId", adxIdConfig.GetInterstitialId())
-            //     .WithParameter("rewardedAdUnitId", adxIdConfig.GetRewardedId());
+            //     .WithParameter("bannerAdUnitId", adxIdConfig?.GetBannerId() ?? default)
+            //     .WithParameter("interstitialAdUnitId", adxIdConfig?.GetInterstitialId() ?? default)
+            //     .WithParameter("rewardedAdUnitId", adxIdConfig?.GetRewardedId() ?? default);
 
 
             // [필수] 등록

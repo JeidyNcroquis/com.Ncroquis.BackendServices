@@ -12,12 +12,11 @@ namespace Ncroquis.Backend
         private readonly string _adUnitId;
         private AdxRewardedAd _rewardedAd;
         private bool _isLoading;
-        private Action _pendingCallback; 
+        private Action _pendingCallback;
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
-        
         public AdxBackendAdsRewarded(AdxBackendAds parent, ILogger logger, string adUnitId)
         {
             _parent = parent;
@@ -25,123 +24,113 @@ namespace Ncroquis.Backend
             _adUnitId = adUnitId;
         }
 
-        public async Task LoadRewardedAsync(CancellationToken cancellationToken = default)
+        public bool IsRewardedAdReady() => _rewardedAd?.IsLoaded() == true;
+
+
+        public async Task LoadRewardedAdAsync(CancellationToken cancellationToken = default)
         {
-            if (_isLoading)
+            if (_isLoading || !_parent.IsInitialized)
             {
-                _logger.Log("[ADX] 보상형 광고 이미 로딩 중입니다. 무시합니다.");
-                return;
-            }
-            if (!_parent.IsInitialized)
-            {
-                _logger.Error("[ADX] ADX SDK가 초기화되지 않았습니다. 보상형 광고를 로드할 수 없습니다.");
-                OnAdError?.Invoke();
+                if (_isLoading)
+                {
+                    _logger.Log("[ADX] 보상형 광고 이미 로딩 중입니다.");
+                }
+                else
+                {
+                    _logger.Warning("[ADX] SDK가 초기화되지 않았습니다.");
+                    OnAdError?.Invoke();
+                }
                 return;
             }
 
             _isLoading = true;
 
             if (_rewardedAd == null)
-                _rewardedAd = new AdxRewardedAd(_adUnitId); // _adUnitId 사용
+            {
+                _rewardedAd = new AdxRewardedAd(_adUnitId);
+                _rewardedAd.OnRewardedAdClosed += () =>
+                {
+                    _logger.Log("[ADX] 보상형 광고 닫힘. 재로드 시도");
+                    _ = LoadRewardedAdAsync();
+                };
+                _rewardedAd.OnPaidEvent += (ecpm) =>
+                {
+                    _pendingCallback?.Invoke();
+                    _pendingCallback = null;
+                    OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0);
+                };
+            }
 
             var tcs = new TaskCompletionSource<bool>();
+            void OnLoaded() => tcs.TrySetResult(true);
+            void OnFailed(int error) => tcs.TrySetException(new Exception(error.ToString()));
 
-            void OnLoaded()
-            {
-                _logger.Log("[ADX] 보상형 광고 로드 완료");
-                tcs.TrySetResult(true);
-                _isLoading = false;
-            }
-            void OnFailed(int error)
-            {
-                _logger.Error($"[ADX] 보상형 광고 로드 실패: {error}");
-                OnAdError?.Invoke();
-                tcs.TrySetException(new Exception(error.ToString()));
-                _isLoading = false;
-            }
-
-            _rewardedAd.OnRewardedAdLoaded -= OnLoaded;
-            _rewardedAd.OnRewardedAdFailedToLoad -= OnFailed;
             _rewardedAd.OnRewardedAdLoaded += OnLoaded;
             _rewardedAd.OnRewardedAdFailedToLoad += OnFailed;
 
-            _rewardedAd.Load();
-            _logger.Log("[ADX] 보상형 광고 로드 요청");
-
-            using (cancellationToken.Register(() => tcs.TrySetCanceled()))
+            try
             {
-                try
+                _logger.Log("[ADX] 보상형 광고 로드 요청");
+                _rewardedAd.Load();
+
+                using (cancellationToken.Register(() => tcs.TrySetCanceled()))
                 {
                     await tcs.Task;
+                    _logger.Log("[ADX] 보상형 광고 로드 완료");
                 }
-                catch (OperationCanceledException)
-                {
-                    _logger.Log("[ADX] 보상형 광고 로드가 취소되었습니다.");
-                    _isLoading = false;
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"[ADX] 보상형 광고 로드 중 예외 발생: {ex.Message}");
-                    OnAdError?.Invoke();
-                    _isLoading = false;
-                    throw;
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
+                OnAdError?.Invoke();
+            }
+            finally
+            {
+                _rewardedAd.OnRewardedAdLoaded -= OnLoaded;
+                _rewardedAd.OnRewardedAdFailedToLoad -= OnFailed;
+                _isLoading = false;
             }
         }
 
-        public void ShowRewardedAd(Action onRewarded)
+        public async Task ShowRewardedAdAsync(Action onRewarded)
         {
             if (!_parent.IsInitialized)
             {
-                _logger.Error("[ADX] ADX SDK가 초기화되지 않았습니다. 보상형 광고를 표시할 수 없습니다.");
+                _logger.Warning("[ADX] SDK가 초기화되지 않았습니다.");
                 OnAdError?.Invoke();
                 return;
             }
 
-            void HandleAdClosed()
-            {
-                _logger.Log("[ADX] 보상형 광고 닫힘. 재로드 시도");
-                _rewardedAd.OnRewardedAdClosed -= HandleAdClosed;
-                OnAdRevenue?.Invoke(_adUnitId, 0); // _adUnitId 사용
-                _ = LoadRewardedAsync();
-            }
+            _pendingCallback = onRewarded;
 
-            void HandlePaidEvent(double ecpm)
+            if (_rewardedAd?.IsLoaded() == true)
             {
-                onRewarded?.Invoke();
-                OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000f); // _adUnitId 사용
-            }
-
-            if (_rewardedAd != null && _rewardedAd.IsLoaded())
-            {
-                _rewardedAd.OnRewardedAdClosed -= HandleAdClosed;
-                _rewardedAd.OnPaidEvent -= HandlePaidEvent;
-                _rewardedAd.OnRewardedAdClosed += HandleAdClosed;
-                _rewardedAd.OnPaidEvent += HandlePaidEvent;
-                _rewardedAd.Show();
                 _logger.Log("[ADX] 보상형 광고 표시 요청");
+                _rewardedAd.Show();
+                return;
             }
-            else
-            {
-                _logger.Log("[ADX] 보상형 광고 준비되지 않음. 로드 시도");
-                _pendingCallback = onRewarded; // 실제로는 _pendingCallback으로 사용하세요
 
-                try
+            try
+            {
+                _logger.Log("[ADX] 보상형 광고 준비되지 않음. 로드 후 표시 시도");
+                await LoadRewardedAdAsync();
+
+                if (_rewardedAd?.IsLoaded() == true)
                 {
-                    _ = LoadRewardedAsync();
+                    _logger.Log("[ADX] 보상형 광고 로드 성공. 즉시 표시");
+                    _rewardedAd.Show();
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.Error($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
+                    _logger.Warning("[ADX] 광고 로드 후에도 준비되지 않음");
                     OnAdError?.Invoke();
                 }
             }
-        }
-
-        public bool IsRewardedAdReady()
-        {
-            return _rewardedAd != null && _rewardedAd.IsLoaded();
+            catch (Exception ex)
+            {
+                _logger.Warning($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
+                OnAdError?.Invoke();
+            }
         }
 
         public void Dispose()

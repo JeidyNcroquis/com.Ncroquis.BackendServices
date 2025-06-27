@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5cd394918e228743bab9505b9dd8018, type: 3}
   m_Name: AdxIdConfig
   m_EditorClassIdentifier: 
+  gdprType: 1
   androidAppId: 62206a77b736bb00010008d9
   iosAppId: 62206a9fb736bb00010008de
   androidBannerId: 629f154e6da6b10001000082
