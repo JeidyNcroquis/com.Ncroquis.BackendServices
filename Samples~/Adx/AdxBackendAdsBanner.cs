@@ -53,7 +53,7 @@ namespace Ncroquis.Backend
             }
             void OnFailed(int error)
             {
-                _logger.Error($"[ADX] 배너 광고 로드 실패: {error}");
+                _logger.Warning($"[ADX] 배너 광고 로드 실패: {error}");
                 OnAdError?.Invoke();
                 tcs.TrySetException(new Exception(error.ToString()));
                 _isLoading = false;
