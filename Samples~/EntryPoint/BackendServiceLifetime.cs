@@ -12,21 +12,21 @@ namespace Ncroquis.Backend
         [SerializeField] private LogLevel LogLevel = LogLevel.Info;
 
 
-        // [Header("ADX 설정")]
+        // [Header("ADX 설정 (없으면 TEST용 자동 설정)")]
         // [SerializeField] private AdxIdConfig adxIdConfig;
 
 
         protected override void Configure(IContainerBuilder builder)
         {
-            // [예] FIREBASE 등록
+            // // [예] FIREBASE 등록
             // builder.Register<FirebaseBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>();
             // builder.Register<FirebaseBackendAuth>(Lifetime.Singleton).AsSelf().As<IBackendAuth>();
             // builder.Register<FirebaseBackendAnalytics>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces().As<IBackendAnalytics>();
-            // builder.Register<FirebaseBackendData>(Lifetime.Singleton).AsSelf().As<IBackendData>();
+            // builder.Register<FirebaseBackendDataStore>(Lifetime.Singleton).AsSelf().As<IBackendDataStore>();
 
 
 
-            // [예] ADX 등록
+            // // [예] ADX 등록
             // builder.Register<AdxBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>()
             //     .WithParameter("adxAppId", adxIdConfig?.GetAppId() ?? default);
 

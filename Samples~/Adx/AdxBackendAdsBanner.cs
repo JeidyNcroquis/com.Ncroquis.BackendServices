@@ -75,7 +75,7 @@ namespace Ncroquis.Backend
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.Log("[ADX] 배너 광고 로드가 취소되었습니다.");
+                    _logger.Log("[ADX] 배너 광고 로드가 취소됨");
                     _isLoading = false;
                     return;
                 }

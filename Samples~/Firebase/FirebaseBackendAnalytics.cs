@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
 using UnityEngine;
 using Firebase.Analytics;
 using VContainer;
@@ -60,6 +61,10 @@ namespace Ncroquis.Backend
             }
 
             FirebaseAnalytics.LogEvent(eventName, firebaseParams.ToArray());
+
+            // 디버그 용 로그
+            var paramDetails = string.Join(", ", parameters.Select(p => $"{p.Key}: {p.Value}"));
+            _logger.Log($"[FIREBASE ANALYTICS] 이벤트 전송: {eventName}, " + $"파라미터: [{paramDetails}]");
         }
 
     }
