@@ -81,10 +81,10 @@ namespace Ncroquis.Backend
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"[ADX] 배너 광고 로드 중 예외 발생: {ex.Message}");
+                    _logger.Warning($"[ADX] 배너 광고 로드 중 예외 발생: {ex.Message}");
                     OnAdError?.Invoke();
                     _isLoading = false;
-                    throw;
+                    return;
                 }
             }
         }
