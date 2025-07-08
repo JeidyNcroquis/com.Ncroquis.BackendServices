@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AdxUnityPlugin;
+using R3;
 
 namespace Ncroquis.Backend
 {
@@ -17,6 +18,12 @@ namespace Ncroquis.Backend
         private Action _pendingCallback;
 
         private CancellationTokenSource _cts = new();
+        private readonly CompositeDisposable _disposables = new();
+
+        // R3 Subjects for event streams
+        private readonly Subject<Unit> _adClosedSubject = new();
+        private readonly Subject<Unit> _rewardEarnedSubject = new();
+        private IDisposable _rewardHandlerDisposable;
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
@@ -51,18 +58,9 @@ namespace Ncroquis.Backend
             {
                 _rewardedAd = new AdxRewardedAd(_adUnitId);
 
-                _rewardedAd.OnRewardedAdClosed += () =>
-                {
-                    _logger.Log("[ADX] 보상형 광고 닫힘. 재로드 시도");
-                    _ = LoadRewardedAdAsync(); // fire-and-forget
-                };
-
-                _rewardedAd.OnPaidEvent += (ecpm) =>
-                {
-                    _pendingCallback?.Invoke();
-                    _pendingCallback = null;
-                    OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0);
-                };
+                _rewardedAd.OnRewardedAdClosed += OnAdClosed;
+                _rewardedAd.OnPaidEvent += OnAdPaid;
+                _rewardedAd.OnRewardedAdEarnedReward += OnAdRewardEarned;
             }
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, externalToken);
@@ -118,9 +116,26 @@ namespace Ncroquis.Backend
 
             _pendingCallback = onRewarded;
 
+            // 이전 구독 정리
+            _rewardHandlerDisposable?.Dispose();
+
+            // 두 이벤트가 모두 발생했을 때 보상 처리
+            _rewardHandlerDisposable = _adClosedSubject
+                .Zip(_rewardEarnedSubject, (closed, earned) => Unit.Default)
+                .Take(1)
+                .Subscribe(async _ =>
+                {
+                    _logger.Log($"[ADX] 보상형 광고 닫힘 & 보상 획득 완료 [{DateTime.Now:HH:mm:ss.fff}]");
+                    _pendingCallback?.Invoke();
+                    _pendingCallback = null;
+
+                    // 광고 재로드
+                    await LoadRewardedAdAsync();
+                });
+
             if (IsRewardedAdReady())
             {
-                _logger.Log("[ADX] 보상형 광고 표시 요청");
+                _logger.Log($"[ADX] 보상형 광고 표시 요청 [{DateTime.Now:HH:mm:ss.fff}]");
                 _rewardedAd.Show();
                 return;
             }
@@ -138,12 +153,14 @@ namespace Ncroquis.Backend
                 else
                 {
                     _logger.Warning("[ADX] 광고 로드 후에도 준비되지 않음");
+                    _rewardHandlerDisposable?.Dispose();
                     OnAdError?.Invoke();
                 }
             }
             catch (Exception ex)
             {
                 _logger.Warning($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
+                _rewardHandlerDisposable?.Dispose();
                 OnAdError?.Invoke();
             }
         }
@@ -155,10 +172,43 @@ namespace Ncroquis.Backend
             _cts.Cancel();
             _cts.Dispose();
 
-            _rewardedAd?.Destroy();
-            _rewardedAd = null;
+            _rewardHandlerDisposable?.Dispose();
+            _adClosedSubject?.Dispose();
+            _rewardEarnedSubject?.Dispose();
+            _disposables?.Dispose();
+
+            if (_rewardedAd != null)
+            {
+                _rewardedAd.OnRewardedAdClosed -= OnAdClosed;
+                _rewardedAd.OnPaidEvent -= OnAdPaid;
+                _rewardedAd.OnRewardedAdEarnedReward -= OnAdRewardEarned;
+
+                _rewardedAd.Destroy();
+                _rewardedAd = null;
+            }
 
             _isDisposed = true;
+        }
+
+
+        // 
+        // 이벤트 핸들러
+        // 
+
+        private void OnAdClosed()
+        {
+            _logger.Log($"[ADX] 보상형 광고 닫힘 [{DateTime.Now:HH:mm:ss.fff}]");
+            _adClosedSubject.OnNext(Unit.Default);
+        }
+
+        private void OnAdPaid(double ecpm)
+        {
+            OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0);
+        }
+
+        private void OnAdRewardEarned()
+        {            
+            _rewardEarnedSubject.OnNext(Unit.Default);
         }
     }
 }
