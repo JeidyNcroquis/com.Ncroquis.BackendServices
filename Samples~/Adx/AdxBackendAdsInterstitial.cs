@@ -2,8 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using AdxUnityPlugin;
+using Cysharp.Threading.Tasks;
 using R3;
-
 
 namespace Ncroquis.Backend
 {
@@ -19,34 +19,29 @@ namespace Ncroquis.Backend
         private Action _pendingCallback;
 
         private CancellationTokenSource _cts = new();
+        private readonly CompositeDisposable _disposables = new();
 
-        
-        // OnAdShown 이벤트를 위한 Subject
+        // R3 Subjects for event streams
         private readonly Subject<Unit> _adShownSubject = new();
-        // OnAdClosed 이벤트를 위한 Subject
         private readonly Subject<Unit> _adClosedSubject = new();
-        // Zip 구독 관리를 위한 Disposable
-        private IDisposable _completionHandlerDisposable;
-        
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
 
         public AdxBackendAdsInterstitial(AdxBackendAds parent, ILogger logger, string adUnitId)
         {
-            _parent = parent;
-            _logger = logger;
-            _adUnitId = adUnitId;
+            _parent = parent ?? throw new ArgumentNullException(nameof(parent));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _adUnitId = adUnitId ?? throw new ArgumentNullException(nameof(adUnitId));
         }
 
         public bool IsInterstitialAdReady() => _interstitialAd?.IsLoaded() == true;
 
-        
         public async Task LoadInterstitialAsync(CancellationToken externalToken = default)
         {
             if (_isDisposed || !_parent.IsInitialized)
             {
-                _logger.Error("[ADX] 광고 로드를 시도했지만, 객체가 파괴되었거나 SDK가 초기화되지 않음");
+                _logger.Warning("[ADX] 광고 로드를 시도했지만 객체가 파괴되었거나 SDK가 초기화되지 않음");
                 OnAdError?.Invoke();
                 return;
             }
@@ -58,35 +53,40 @@ namespace Ncroquis.Backend
             }
 
             _isLoading = true;
-            if (_interstitialAd == null)
-            {
-                _interstitialAd = new AdxInterstitialAd(_adUnitId);
-
-                // 이벤트 핸들러를 별도 메소드로 연결
-                _interstitialAd.OnAdShown += OnAdShown;
-                _interstitialAd.OnAdClosed += OnAdClosed;
-                _interstitialAd.OnPaidEvent += OnAdPaid;
-            }
-
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, externalToken);
-            var token = linkedCts.Token;
-            var tcs = new TaskCompletionSource<bool>();
-
-            void OnLoaded() => tcs.TrySetResult(true);
-            void OnFailed(int error) => tcs.TrySetException(new Exception(error.ToString()));
-
-            _interstitialAd.OnAdLoaded += OnLoaded;
-            _interstitialAd.OnAdFailedToLoad += OnFailed;
 
             try
             {
-                _logger.Log("[ADX] 전면 광고 로드 요청");
-                _interstitialAd.Load();
-
-                using (token.Register(() => tcs.TrySetCanceled()))
+                // 광고 인스턴스 초기화
+                if (_interstitialAd == null)
                 {
-                    await tcs.Task;
-                    _logger.Log("[ADX] 전면 광고 로드 완료");
+                    InitializeInterstitialAd();
+                }
+
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, externalToken);
+                var token = linkedCts.Token;
+                var tcs = new TaskCompletionSource<bool>();
+
+                void OnLoaded() => tcs.TrySetResult(true);
+                void OnFailed(int error) => tcs.TrySetException(new Exception($"Ad load failed with error: {error}"));
+
+                _interstitialAd.OnAdLoaded += OnLoaded;
+                _interstitialAd.OnAdFailedToLoad += OnFailed;
+
+                try
+                {
+                    _logger.Log("[ADX] 전면 광고 로드 요청");
+                    _interstitialAd.Load();
+
+                    using (token.Register(() => tcs.TrySetCanceled()))
+                    {
+                        await tcs.Task;
+                        _logger.Log("[ADX] 전면 광고 로드 완료");
+                    }
+                }
+                finally
+                {
+                    _interstitialAd.OnAdLoaded -= OnLoaded;
+                    _interstitialAd.OnAdFailedToLoad -= OnFailed;
                 }
             }
             catch (OperationCanceledException)
@@ -100,84 +100,123 @@ namespace Ncroquis.Backend
             }
             finally
             {
-                if (_interstitialAd != null)
-                {
-                    _interstitialAd.OnAdLoaded -= OnLoaded;
-                    _interstitialAd.OnAdFailedToLoad -= OnFailed;
-                }
-
                 _isLoading = false;
             }
         }
 
-        // ShowInterstitialAdAsync 수정: R3 Zip 로직 추가
         public async Task ShowInterstitialAdAsync(Action onCompleted)
         {
             if (_isDisposed || !_parent.IsInitialized)
             {
-                _logger.Warning("[ADX] 광고 표시 시도 실패: 객체가 파괴되었거나 SDK가 초기화되지 않음");
+                _logger.Warning("[ADX] SDK가 초기화되지 않았거나 객체가 파괴됨");
                 OnAdError?.Invoke();
+                return;
+            }
+
+            if (_pendingCallback != null)
+            {
+                _logger.Warning("[ADX] 이미 전면 광고가 진행 중입니다.");
                 return;
             }
 
             _pendingCallback = onCompleted;
 
-            // 이전 구독 정리
-            _completionHandlerDisposable?.Dispose();
-
-            // OnAdShown과 OnAdClosed가 모두 발생했을 때 완료 처리 설정
-            _completionHandlerDisposable = _adShownSubject
-                .Zip(_adClosedSubject, (shown, closed) => Unit.Default)
-                .Take(1) // 한 번만 실행되도록 설정
-                .Subscribe(async _ =>
+            // 광고 표시 전 완료 처리 구독 설정
+            // CombineLatest를 사용하여 두 이벤트가 모두 발생했을 때 완료 처리
+            Observable.CombineLatest(
+                    _adShownSubject.Take(1),            // 광고 표시 이벤트 (첫 번째만)
+                    _adClosedSubject.Take(1),           // 광고 닫힘 이벤트 (첫 번째만)
+                    (shown, closed) => Unit.Default     // 두 이벤트를 Unit으로 결합
+                )
+                .Take(1) // 두 조건이 모두 충족되었을 때 한 번만 실행
+                .Subscribe(_ =>
                 {
-                    _logger.Log($"[ADX] 전면 광고 시청 완료 (Shown & Closed 모두 발생) [{DateTime.Now:HH:mm:ss.fff}]");
+                    _logger.Log($"[ADX] 전면 광고 표시 & 닫힘 완료 [{DateTime.Now:HH:mm.ss}]");
 
                     // 완료 콜백 실행
-                    _pendingCallback?.Invoke();
+                    var callback = _pendingCallback;
                     _pendingCallback = null;
+                    callback?.Invoke();
 
-                    // 광고 시청 완료 후 자동 재로드
-                    _logger.Log("[ADX] 전면 광고 재로드 시작");
-                    await LoadInterstitialAsync();
-                });
+                    // 광고 재로드 (Fire and Forget 방식)
+                    ReloadAdAsync().Forget();
+                })
+                .AddTo(_disposables);
+
 
             if (IsInterstitialAdReady())
             {
-                _logger.Log($"[ADX] 전면 광고 표시 요청 [{DateTime.Now:HH:mm:ss.fff}]");
+                _logger.Log($"[ADX] 전면 광고 표시 요청 [{DateTime.Now:HH:mm.ss}]");
                 _interstitialAd.Show();
                 return;
             }
 
+
             try
             {
-                _logger.Log("[ADX] 광고 준비 안됨 → 로드 후 표시 시도");
-                await LoadInterstitialAsync();
+                _logger.Log("[ADX] 전면 광고 준비되지 않음. 로드 후 표시 시도");
+                await LoadInterstitialAsync(_cts.Token);
 
                 if (IsInterstitialAdReady())
                 {
-                    _logger.Log("[ADX] 전면 광고 로드 성공 → 즉시 표시");
+                    _logger.Log("[ADX] 전면 광고 로드 성공. 즉시 표시");
                     _interstitialAd.Show();
                 }
                 else
                 {
                     _logger.Warning("[ADX] 광고 로드 후에도 준비되지 않음");
-                    // 로드 실패 시 구독 해제
-                    _completionHandlerDisposable?.Dispose();
+                    ResetPendingCallback();
                     OnAdError?.Invoke();
                 }
             }
             catch (Exception ex)
             {
                 _logger.Warning($"[ADX] 전면 광고 로드 실패: {ex.Message}");
-                // 로드 실패 시 구독 해제
-                _completionHandlerDisposable?.Dispose();
+                ResetPendingCallback();
                 OnAdError?.Invoke();
             }
         }
 
 
-        // Dispose 수정: R3 Subject 및 Disposable 정리 추가
+        /// <summary>
+        /// 광고 재로드를 Fire and Forget 방식으로 처리하는 UniTask 메서드
+        /// </summary>
+        private async UniTask ReloadAdAsync()
+        {
+            try
+            {
+                await LoadInterstitialAsync(_cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Log("[ADX] 광고 재로드 취소됨");
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"[ADX] 광고 재로드 실패: {ex.Message}");
+                OnAdError?.Invoke();
+            }
+        }
+
+        /// <summary>
+        /// 전면 광고 인스턴스 초기화
+        /// </summary>
+        private void InitializeInterstitialAd()
+        {
+            _interstitialAd = new AdxInterstitialAd(_adUnitId);
+            _interstitialAd.OnAdShown += OnAdShown;
+            _interstitialAd.OnAdClosed += OnAdClosed;
+            _interstitialAd.OnPaidEvent += OnAdPaid;
+        }
+
+        /// <summary>
+        /// 진행 중인 완료 콜백 초기화
+        /// </summary>
+        private void ResetPendingCallback()
+        {
+            _pendingCallback = null;
+        }
+
         public void Dispose()
         {
             if (_isDisposed) return;
@@ -185,14 +224,12 @@ namespace Ncroquis.Backend
             _cts.Cancel();
             _cts.Dispose();
 
-            // R3 리소스 정리
-            _completionHandlerDisposable?.Dispose();
+            _disposables?.Dispose();
             _adShownSubject?.Dispose();
             _adClosedSubject?.Dispose();
 
             if (_interstitialAd != null)
             {
-                // 이벤트 핸들러 해제
                 _interstitialAd.OnAdShown -= OnAdShown;
                 _interstitialAd.OnAdClosed -= OnAdClosed;
                 _interstitialAd.OnPaidEvent -= OnAdPaid;
@@ -201,9 +238,9 @@ namespace Ncroquis.Backend
                 _interstitialAd = null;
             }
 
+            _pendingCallback = null;
             _isDisposed = true;
         }
-
 
         // 
         // 이벤트 핸들러
@@ -211,21 +248,16 @@ namespace Ncroquis.Backend
 
         private void OnAdShown()
         {
-            // OnAdShown 발생 시 Subject에 알림
             _adShownSubject.OnNext(Unit.Default);
         }
 
         private void OnAdClosed()
         {
-            _logger.Log($"[ADX] 전면 광고 닫힘 (Closed) [{DateTime.Now:HH:mm:ss.fff}]");
-            // OnAdClosed 발생 시 Subject에 알림
             _adClosedSubject.OnNext(Unit.Default);
-            // 참고: 재로드는 ShowInterstitialAdAsync의 Subscribe 내부에서 처리됩니다.
         }
 
         private void OnAdPaid(double ecpm)
         {
-            // 수익 이벤트만 처리합니다. 완료 콜백(_pendingCallback)은 여기서 호출하지 않습니다.
             OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0);
         }
     }
