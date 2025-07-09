@@ -131,15 +131,18 @@ namespace Ncroquis.Backend
                 .Take(1) // 두 조건이 모두 충족되었을 때 한 번만 실행
                 .Subscribe(_ =>
                 {
-                    _logger.Log($"[ADX] 전면 광고 표시 & 닫힘 완료 [{DateTime.Now:HH:mm.ss}]");
+                    UniTask.Post(() =>
+                    {
+                        _logger.Log($"[ADX] 전면 광고 표시 & 닫힘 완료 [{DateTime.Now:HH:mm.ss}]");
 
-                    // 완료 콜백 실행
-                    var callback = _pendingCallback;
-                    _pendingCallback = null;
-                    callback?.Invoke();
+                        // 완료 콜백 실행
+                        var callback = _pendingCallback;
+                        _pendingCallback = null;
+                        callback?.Invoke();
 
-                    // 광고 재로드 (Fire and Forget 방식)
-                    ReloadAdAsync().Forget();
+                        // 광고 재로드 (Fire and Forget 방식)
+                        ReloadAdAsync().Forget();
+                    });
                 })
                 .AddTo(_disposables);
 
@@ -248,17 +251,18 @@ namespace Ncroquis.Backend
 
         private void OnAdShown()
         {
-            _adShownSubject.OnNext(Unit.Default);
+            UniTask.Post(() =>_adShownSubject.OnNext(Unit.Default));
         }
 
         private void OnAdClosed()
         {
-            _adClosedSubject.OnNext(Unit.Default);
+            UniTask.Post(() =>_adClosedSubject.OnNext(Unit.Default));
         }
 
         private void OnAdPaid(double ecpm)
         {
-            OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0);
+            UniTask.Post(() =>OnAdRevenue?.Invoke(_adUnitId, ecpm / 1000.0));
         }
+
     }
 }
