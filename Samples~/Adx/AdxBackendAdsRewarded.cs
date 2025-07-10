@@ -37,6 +37,7 @@ namespace Ncroquis.Backend
 
         public bool IsRewardedAdReady() => _rewardedAd?.IsLoaded() == true;
 
+        // Also update the LoadRewardedAdAsync method to handle onFailure cases
         public async Task LoadRewardedAdAsync(CancellationToken externalToken = default)
         {
             if (_isDisposed || !_parent.IsInitialized)
@@ -67,7 +68,12 @@ namespace Ncroquis.Backend
                 var tcs = new TaskCompletionSource<bool>();
 
                 void OnLoaded() => tcs.TrySetResult(true);
-                void OnFailed(int error) => tcs.TrySetException(new Exception($"Ad load failed with error: {error}"));
+                void OnFailed(int error)
+                {
+                    _logger.Warning($"[ADX] 보상형 광고 로드 실패: {error}");
+                    tcs.TrySetException(new Exception($"Ad load failed with error: {error}"));
+                    OnAdError?.Invoke();
+                }
 
                 _rewardedAd.OnRewardedAdLoaded += OnLoaded;
                 _rewardedAd.OnRewardedAdFailedToLoad += OnFailed;
@@ -92,11 +98,13 @@ namespace Ncroquis.Backend
             catch (OperationCanceledException)
             {
                 _logger.Log("[ADX] 보상형 광고 로드 취소됨");
+                throw;
             }
             catch (Exception ex)
             {
                 _logger.Warning($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
                 OnAdError?.Invoke();
+                throw;
             }
             finally
             {
@@ -113,10 +121,11 @@ namespace Ncroquis.Backend
                 return;
             }
 
+            // 기존 광고 진행 중이면 리셋하고 새로 시작
             if (_pendingCallback != null)
             {
-                _logger.Warning("[ADX] 이미 보상형 광고가 진행 중입니다.");
-                return;
+                _logger.Warning("[ADX] 이미 보상형 광고가 진행 중입니다. 기존 콜백을 리셋하고 새로 시작합니다.");
+                _pendingCallback = null;
             }
 
             _pendingCallback = onRewarded;
@@ -144,14 +153,19 @@ namespace Ncroquis.Backend
                 else
                 {
                     _logger.Warning("[ADX] 광고 로드 후에도 준비되지 않음");
-                    ResetPendingCallback();
+                    _pendingCallback = null;
                     OnAdError?.Invoke();
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.Log("[ADX] 보상형 광고 로드 취소됨");
+                _pendingCallback = null;
             }
             catch (Exception ex)
             {
                 _logger.Warning($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
-                ResetPendingCallback();
+                _pendingCallback = null;
                 OnAdError?.Invoke();
             }
         }
@@ -215,13 +229,7 @@ namespace Ncroquis.Backend
             _rewardedAd.OnRewardedAdEarnedReward += OnAdRewardEarned;
         }
 
-        /// <summary>
-        /// 진행 중인 보상 콜백 초기화
-        /// </summary>
-        private void ResetPendingCallback()
-        {
-            _pendingCallback = null;
-        }
+        
 
         public void Dispose()
         {

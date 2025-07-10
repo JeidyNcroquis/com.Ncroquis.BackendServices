@@ -113,10 +113,11 @@ namespace Ncroquis.Backend
                 return;
             }
 
+            // 기존 광고 진행 중이면 리셋하고 새로 시작
             if (_pendingCallback != null)
             {
-                _logger.Warning("[ADX] 이미 전면 광고가 진행 중입니다.");
-                return;
+                _logger.Log("[ADX] 이미 전면 광고가 진행 중입니다. 기존 콜백을 리셋하고 새로 시작합니다.");
+                _pendingCallback = null;
             }
 
             _pendingCallback = onCompleted;
