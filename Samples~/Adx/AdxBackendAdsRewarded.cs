@@ -98,13 +98,13 @@ namespace Ncroquis.Backend
             catch (OperationCanceledException)
             {
                 _logger.Log("[ADX] 보상형 광고 로드 취소됨");
-                throw;
+                return;
             }
             catch (Exception ex)
             {
                 _logger.Warning($"[ADX] 보상형 광고 로드 실패: {ex.Message}");
                 OnAdError?.Invoke();
-                throw;
+                return;
             }
             finally
             {

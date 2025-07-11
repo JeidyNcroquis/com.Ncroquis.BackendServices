@@ -33,9 +33,9 @@ namespace Ncroquis.Backend
         protected override async Task OnAfterAllInitialized(CancellationToken cancellation)
         {
             // AppWatcher GameObject 생성
-            var appwatcher = new GameObject("BackendServiceAppWatcher (DontDestroy)").AddComponent<BackendServiceAppWatcher>();
-            Object.DontDestroyOnLoad(appwatcher.gameObject);
-            resolver.Inject(appwatcher);
+            // var appwatcher = new GameObject("BackendServiceAppWatcher (DontDestroy)").AddComponent<BackendServiceAppWatcher>();
+            // Object.DontDestroyOnLoad(appwatcher.gameObject);
+            // resolver.Inject(appwatcher);
 
 
             logger.Log("[BackendServiceInitializer] 모든 백엔드 서비스가 초기화되었습니다.");

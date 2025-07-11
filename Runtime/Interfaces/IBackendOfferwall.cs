@@ -12,6 +12,11 @@ namespace Ncroquis.Backend
     {
 
         /// <summary>
+        /// 오퍼월 창이 열렸으면 포커스 상태를 true로 설정합니다.
+        /// </summary>
+        bool IsFocused { get; set; }
+
+        /// <summary>
         /// 리워드 광고 또는 오퍼월 UI를 시작합니다.
         /// </summary>
         void StartOfferwall(string userId);

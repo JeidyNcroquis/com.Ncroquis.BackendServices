@@ -11,11 +11,10 @@ namespace Ncroquis.Backend
 
         public ProviderKey providerKey => ProviderKey.POINTPUB;
 
-        public string UserId => _userId;
-        private readonly string _appId = "";
-
+        
         public string AppId => _appId;
-        private readonly string _userId = "";
+        private readonly string _appId = "";
+        
 
 
         private readonly ILogger _logger;
@@ -28,15 +27,14 @@ namespace Ncroquis.Backend
 
 
         [Inject]
-        public PointpubBackendProvider(ILogger logger, string offerwallAppId, string offerwallUserId)
+        public PointpubBackendProvider(ILogger logger, string offerwallAppId)
         {
             _logger = logger;
 
             if (string.IsNullOrEmpty(offerwallAppId))
                 _logger.Warning("[POINTPUB PROVIDER] AppId가 없습니다.");
 
-            _appId = offerwallAppId;
-            _userId = offerwallUserId;            
+            _appId = offerwallAppId;         
         }
 
 
@@ -77,6 +75,9 @@ namespace Ncroquis.Backend
 
 
             _isInitialized.Value = true;
+
+            _logger.Log("[POINTPUB PROVIDER] SDK 초기화 완료되었습니다.");
+
             _initializeTcs?.TrySetResult(true);
 
             return _initializeTcs.Task;

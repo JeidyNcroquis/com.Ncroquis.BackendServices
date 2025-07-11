@@ -140,6 +140,9 @@ namespace Ncroquis.Backend
                         var callback = _pendingCallback;
                         _pendingCallback = null;
                         callback?.Invoke();
+
+                        // 광고 재로드 (Fire and Forget 방식)
+                        ReloadAdAsync().Forget();
                     });
                 })
                 .AddTo(_disposables);
@@ -162,9 +165,6 @@ namespace Ncroquis.Backend
                 {
                     _logger.Log("[ADX] 전면 광고 로드 성공. 즉시 표시");
                     _interstitialAd.Show();
-
-                    // 광고 시작후 다시 로드
-                    ReloadAdAsync().Forget();
                 }
                 else
                 {
