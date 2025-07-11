@@ -8,7 +8,7 @@ namespace Ncroquis.Backend
         NONE,
         FIREBASE,
         ADX,
-        ADJUST
+        POINTPUB
     }
 
     public interface IBackendIdentifiable
@@ -23,6 +23,7 @@ namespace Ncroquis.Backend
         IBackendAnalytics Analytics(ProviderKey? key = null);
         IBackendDataStore DataStore(ProviderKey? key = null);
         IBackendAds Ads(ProviderKey? key = null);
+        IBackendOfferwall Offerwall(ProviderKey? key = null);
     }
 
 }

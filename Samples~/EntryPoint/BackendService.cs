@@ -31,6 +31,10 @@ namespace Ncroquis.Backend
         // 예 : Adx 광고
         public IBackendAds Ads(ProviderKey? key = null) => Get(_ads, key, nameof(IBackendAds));
 
+        // 오퍼월(광고 리워드) 서비스를 선택적으로 가져오는 메서드입니다.
+        // 예 : PointPub, Tapjoy 등
+        public IBackendOfferwall Offerwall(ProviderKey? key = null) => Get(_offerwalls, key, nameof(IBackendOfferwall));
+
 
 
         [Inject]
@@ -40,8 +44,9 @@ namespace Ncroquis.Backend
             IEnumerable<IBackendAuth> auths,
             IEnumerable<IBackendAnalytics> analytics,
             IEnumerable<IBackendDataStore> datastores,
-            IEnumerable<IBackendAds> ads
-        ) : base(logger, providers, auths, analytics, datastores, ads)
+            IEnumerable<IBackendAds> ads,
+            IEnumerable<IBackendOfferwall> offerwalls
+        ) : base(logger, providers, auths, analytics, datastores, ads, offerwalls)
         {            
         }
 

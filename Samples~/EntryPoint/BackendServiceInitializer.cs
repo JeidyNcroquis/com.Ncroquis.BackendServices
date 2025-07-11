@@ -2,6 +2,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using VContainer;
+using UnityEngine;
+
 
 namespace Ncroquis.Backend
 {
@@ -13,13 +15,15 @@ namespace Ncroquis.Backend
     {
         private readonly ILogger logger;
         private readonly BackendService service;
+        private readonly IObjectResolver resolver;
 
         [Inject]
-        public BackendServiceInitializer(IEnumerable<IBackendProvider> providers, ILogger logger, BackendService service)
+        public BackendServiceInitializer(IEnumerable<IBackendProvider> providers, ILogger logger, BackendService service, IObjectResolver resolver)
             : base(providers, logger)
         {
             this.logger = logger;
             this.service = service;
+            this.resolver = resolver;
         }
 
         /// <summary>
@@ -28,8 +32,7 @@ namespace Ncroquis.Backend
         /// </summary>
         protected override async Task OnAfterAllInitialized(CancellationToken cancellation)
         {
-            // 예시: 로그인 또는 추가적인 초기화 작업을 수행할 수 있습니다.
-            //await service.Auth().SignInAnonymouslyAsync();
+            logger.Log("[BackendServiceInitializer] 모든 백엔드 서비스가 초기화되었습니다.");            
 
             await Task.CompletedTask;
         }
