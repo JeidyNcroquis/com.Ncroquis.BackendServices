@@ -25,7 +25,15 @@ namespace Ncroquis.Backend
         protected override void Configure(IContainerBuilder builder)
         {
 
-            // [필수] 등록
+            // [필수1] MessagePipe 설정
+            var options = builder.RegisterMessagePipe();
+            builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProvider()));
+
+            // [필수2] Publisher/Subscriber 등록
+            builder.RegisterMessageBroker<FocusChangedMessage>(options);
+            builder.RegisterMessageBroker<PauseChangedMessage>(options);
+
+            // [필수3] 등록
             builder.Register<ILogger>(_ => new UnityLogger(LogLevel), Lifetime.Singleton);
             builder.Register<BackendService>(Lifetime.Singleton);
             builder.RegisterEntryPoint<BackendServiceInitializer>(Lifetime.Singleton);
@@ -33,7 +41,8 @@ namespace Ncroquis.Backend
 
 
 
-            // [선택] FIREBASE 등록
+
+            // [예] FIREBASE 등록
             // builder.Register<FirebaseBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>();
             // builder.Register<FirebaseBackendAuth>(Lifetime.Singleton).AsSelf().As<IBackendAuth>();
             // builder.Register<FirebaseBackendAnalytics>(Lifetime.Singleton).AsSelf().AsImplementedInterfaces().As<IBackendAnalytics>();
@@ -41,7 +50,7 @@ namespace Ncroquis.Backend
 
 
 
-            // [선택] ADX 등록
+            // [예] ADX 등록
             builder.Register<AdxBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>()
                 .WithParameter("adxAppId", adxIdConfig?.GetAppId() ?? default);
 
@@ -53,10 +62,9 @@ namespace Ncroquis.Backend
 
 
 
-            // [선택] POINTPUB 등록
+            // [예] POINTPUB 등록
             builder.Register<PointpubBackendProvider>(Lifetime.Singleton).AsSelf().As<IBackendProvider>()
-                .WithParameter("offerwallAppId", pointpubIdConfig.GetAppId() ?? default)
-                .WithParameter("offerwallUserId", "" ?? default);
+                .WithParameter("offerwallAppId", "" ?? default);
 
             builder.Register<PointpubBackendOfferwall>(Lifetime.Singleton).AsSelf().As<IBackendOfferwall>();
 

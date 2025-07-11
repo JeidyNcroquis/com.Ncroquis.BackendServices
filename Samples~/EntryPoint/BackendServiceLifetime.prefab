@@ -49,4 +49,5 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   LogLevel: 0
-  adxIdConfig: {fileID: 0}
+  adxIdConfig: {fileID: 11400000, guid: 6dd2115d4415d034980d2c68dd47f945, type: 2}
+  pointpubIdConfig: {fileID: 11400000, guid: 5764fc055ea01ce4085939ce2397a9e3, type: 2}

@@ -1,6 +1,6 @@
 {
   "name": "com.ncroquis.backendservices",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "displayName": "Backend Services",
   "description": "\ubc31\uc5d4\ub4dc \ud1b5\ud569 \uad00\ub9ac\uc790 \n( Firebase, ADX , Point Pub , ...)",
   "unity": "2021.3",
@@ -17,22 +17,22 @@
   "samples": [
     {
       "displayName": "EntryPoint",
-      "description": "[필수] 백엔드 서비스 시작 (초기화)",
+      "description": "[\ud544\uc218] \ubc31\uc5d4\ub4dc \uc11c\ube44\uc2a4 \uc2dc\uc791 (\ucd08\uae30\ud654)",
       "path": "Samples~/EntryPoint"
     },
     {
       "displayName": "Firebase",
-      "description": "[선택] Firebase 사용시 추가합니다.",
+      "description": "[\uc120\ud0dd] Firebase \uc0ac\uc6a9\uc2dc \ucd94\uac00\ud569\ub2c8\ub2e4.",
       "path": "Samples~/Firebase"
     },
     {
       "displayName": "ADX",
-      "description": "[선택] ADX(광고) 사용시 추가합니다.\nhttps://docs.adxcorp.kr/unity/integrate",
+      "description": "[\uc120\ud0dd] ADX(\uad11\uace0) \uc0ac\uc6a9\uc2dc \ucd94\uac00\ud569\ub2c8\ub2e4.\nhttps://docs.adxcorp.kr/unity/integrate",
       "path": "Samples~/ADX"
     },
     {
       "displayName": "PointPub",
-      "description": "[선택] Point Pub 오퍼월 광고 사용시 추가합니다.\nhttps://adm.pointpub.kr/media/dashboard \nhttps://docs.pointpub.kr/unity/sdk-integration",
+      "description": "[\uc120\ud0dd] Point Pub \uc624\ud37c\uc6d4 \uad11\uace0 \uc0ac\uc6a9\uc2dc \ucd94\uac00\ud569\ub2c8\ub2e4.\nhttps://adm.pointpub.kr/media/dashboard \nhttps://docs.pointpub.kr/unity/sdk-integration",
       "path": "Samples~/PointPub"
     }
   ]

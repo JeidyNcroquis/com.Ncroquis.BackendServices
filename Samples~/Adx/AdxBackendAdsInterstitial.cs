@@ -140,9 +140,6 @@ namespace Ncroquis.Backend
                         var callback = _pendingCallback;
                         _pendingCallback = null;
                         callback?.Invoke();
-
-                        // 광고 재로드 (Fire and Forget 방식)
-                        ReloadAdAsync().Forget();
                     });
                 })
                 .AddTo(_disposables);

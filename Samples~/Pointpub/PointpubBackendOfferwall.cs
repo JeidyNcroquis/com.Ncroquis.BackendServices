@@ -15,28 +15,31 @@ namespace Ncroquis.Backend
         public ProviderKey providerKey => ProviderKey.POINTPUB;
 
 
-        public void StartOfferwall()
+        public void StartOfferwall(string userId)
         {
+
 #if UNITY_EDITOR
             _logger.Log("[POINTPUB OFFERWALL] Unity Editor에서 StartOfferwall 호출됨.");
 #elif UNITY_ANDROID
-            if (_provider == null || string.IsNullOrEmpty(_provider.UserId))
+            if (_provider == null || string.IsNullOrEmpty(userId))
             {
-                _logger.Warning("[POINTPUB OFFERWALL] StartOfferwall 실패: Provider 또는 UserId가 유효하지 않습니다.");
+                _logger.Warning($"[POINTPUB OFFERWALL] StartOfferwall 실패: UserId : {userId}가 유효하지 않습니다.");
                 return;
             }
 
-            PointPubUnityPlugin.Android.PointPubSdkClient.Instance.StartOfferwall(_provider.UserId);
+            PointPubUnityPlugin.Android.PointPubSdkClient.Instance.StartOfferwall(userId);
+
 #elif UNITY_IOS || UNITY_IPHONE
             _logger.Warning("[POINTPUB OFFERWALL] iOS는 아직 지원되지 않습니다.");
 #endif
+
         }
 
 
         //
         // int : code, string : data
         //
-        public async Task GetRewardsAsync(Action<int, string> callback)
+        public async Task GetRewardsAsync(string userId, Action<int, string> callback)
         {
 
 #if UNITY_EDITOR
@@ -45,7 +48,7 @@ namespace Ncroquis.Backend
             callback?.Invoke(-1, "Editor mode");
             return;
 #elif UNITY_ANDROID
-            if (_provider == null || string.IsNullOrEmpty(_provider.UserId))
+            if (_provider == null || string.IsNullOrEmpty(userId))
             {
                 _logger.Warning("[POINTPUB OFFERWALL] GetRewardsAsync 실패: Provider 나 UserId 가 null입니다.");
 
@@ -57,7 +60,7 @@ namespace Ncroquis.Backend
 
             try
             {
-                var result = await GetParticipationAsync(_provider.UserId);
+                var result = await GetParticipationAsync(userId);
                 await UniTask.SwitchToMainThread();
                 callback?.Invoke(result.Item1, result.Item2);
             }
