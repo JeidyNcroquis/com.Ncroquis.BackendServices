@@ -149,6 +149,9 @@ namespace Ncroquis.Backend
                 {
                     _logger.Log("[ADX] 보상형 광고 로드 성공. 즉시 표시");
                     _rewardedAd.Show();
+
+                    // 광고 시작후 다시 로드
+                    ReloadAdAsync().Forget();
                 }
                 else
                 {
