@@ -24,7 +24,7 @@ namespace Ncroquis.Backend
             _adUnitId = adUnitId;
         }
 
-        public async Task LoadBannerAsync(BannerSize bannerSize = BannerSize.Size_320x50, BannerPosition bannerPosition = BannerPosition.Top, CancellationToken cancellationToken = default)
+        public async Task LoadBannerAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default)
         {
             if (_isLoading)
             {
