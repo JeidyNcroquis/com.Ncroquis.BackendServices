@@ -1,6 +1,6 @@
 {
   "name": "com.ncroquis.backendservices",
-  "version": "0.3.17",
+  "version": "0.3.18",
   "displayName": "Backend Services",
   "description": "\ubc31\uc5d4\ub4dc \ud1b5\ud569 \uad00\ub9ac\uc790 \n( Firebase, ADX , Point Pub , ...)",
   "unity": "2021.3",

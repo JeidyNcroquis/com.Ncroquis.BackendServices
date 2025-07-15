@@ -12,7 +12,6 @@ namespace Ncroquis.Backend
         private readonly ILogger _logger;
         private readonly string _adUnitId;
         private AdxBannerAd _bannerAd;
-        private bool _isLoading;
 
         public event Action OnAdError;
         public event Action<string, double> OnAdRevenue;
@@ -26,20 +25,12 @@ namespace Ncroquis.Backend
 
         public async Task LoadBannerAsync(BannerSize bannerSize, BannerPosition bannerPosition, CancellationToken cancellationToken = default)
         {
-            if (_isLoading)
-            {
-                _logger.Log("[ADX] 배너 광고 이미 로딩 중입니다. 무시합니다.");
-                return;
-            }
-
             if (!_parent.IsInitialized)
             {
                 _logger.Error("[ADX] ADX SDK가 초기화되지 않았습니다. 배너 광고를 로드할 수 없습니다.");
                 OnAdError?.Invoke();
                 return;
             }
-
-            _isLoading = true;
 
             _bannerAd?.Destroy();
             _bannerAd = new AdxBannerAd(_adUnitId, (int)bannerSize, (int)bannerPosition);
@@ -51,7 +42,6 @@ namespace Ncroquis.Backend
                 UniTask.Post(() =>
                 {
                     _logger.Log("[ADX] 배너 광고 로드 완료");
-                    _isLoading = false;
                     OnAdRevenue?.Invoke(_adUnitId, 0); // 실제 수익은 SDK에서 받아야 함
                     tcs.TrySetResult(true);
                 });
@@ -62,7 +52,6 @@ namespace Ncroquis.Backend
                 UniTask.Post(() =>
                 {
                     _logger.Warning($"[ADX] 배너 광고 로드 실패: {error}");
-                    _isLoading = false;
                     OnAdError?.Invoke();
                     tcs.TrySetException(new Exception(error.ToString()));
                 });
@@ -81,7 +70,6 @@ namespace Ncroquis.Backend
                 UniTask.Post(() =>
                 {
                     _logger.Log("[ADX] 배너 광고 로드가 취소됨");
-                    _isLoading = false;
                     tcs.TrySetCanceled();
                 });
             }))
